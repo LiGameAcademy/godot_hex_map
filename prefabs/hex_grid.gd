@@ -30,6 +30,9 @@ func get_cell(coords: HexCoordinates) -> HexCell:
 	return cells.filter(
 		func(c: HexCell) -> bool: return c.coordinates.x == coords.x and c.coordinates.z == coords.z
 	).pop_front()
+	
+func refresh() -> void:
+	hex_mesh.triangulate(cells)
 
 func _create_coordinates_label(cell: HexCell) -> Label3D:
 	var label := Label3D.new()

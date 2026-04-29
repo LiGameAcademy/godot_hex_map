@@ -3,8 +3,27 @@
 [ext_resource type="Script" uid="uid://be8m8v571wab5" path="res://prefabs/hex_grid.gd" id="1_mmo8j"]
 [ext_resource type="Script" uid="uid://celdw1irt46w2" path="res://scripts/hex_mesh.gd" id="2_2vcw8"]
 
+[sub_resource type="BoxMesh" id="BoxMesh_rk35d"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hfxtd"]
+vertex_color_use_as_albedo = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_2vcw8"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rk35d"]
+shading_mode = 0
+albedo_color = Color(0.004899827, 0.004899827, 0.004899827, 1)
+
 [node name="HexGrid" type="Node3D" unique_id=258472898]
 script = ExtResource("1_mmo8j")
 
 [node name="HexMesh" type="MeshInstance3D" parent="." unique_id=202375722]
+mesh = SubResource("BoxMesh_rk35d")
+surface_material_override/0 = SubResource("StandardMaterial3D_hfxtd")
 script = ExtResource("2_2vcw8")
+show_wireframe = true
+
+[node name="WireframeMesh" type="MeshInstance3D" parent="HexMesh" unique_id=1499139189]
+cast_shadow = 0
+mesh = SubResource("BoxMesh_2vcw8")
+surface_material_override/0 = SubResource("StandardMaterial3D_rk35d")

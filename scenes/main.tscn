@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://xmk16gfwea4"]
 
 [ext_resource type="PackedScene" uid="uid://r8bbikpwg6vq" path="res://prefabs/hex_grid.tscn" id="1_o5qli"]
+[ext_resource type="Script" uid="uid://dmgota36soris" path="res://scripts/hex_map_editor.gd" id="2_0wfyh"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -28,3 +29,8 @@ shadow_enabled = true
 transform = Transform3D(1, 0, 0, 0, 0.2654383, 0.96412784, 0, -0.96412784, 0.2654383, 40.72754, 72.73242, 58.94879)
 
 [node name="HexGrid" parent="." unique_id=258472898 instance=ExtResource("1_o5qli")]
+
+[node name="HexMapEditor" type="Node" parent="." unique_id=1904008612 node_paths=PackedStringArray("hex_grid")]
+script = ExtResource("2_0wfyh")
+hex_grid = NodePath("../HexGrid")
+metadata/_custom_type_script = "uid://dmgota36soris"
