@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://r8bbikpwg6vq"]
+
+[ext_resource type="Script" uid="uid://be8m8v571wab5" path="res://prefabs/hex_grid.gd" id="1_mmo8j"]
+[ext_resource type="Script" uid="uid://celdw1irt46w2" path="res://scripts/hex_mesh.gd" id="2_2vcw8"]
+
+[node name="HexGrid" type="Node3D" unique_id=258472898]
+script = ExtResource("1_mmo8j")
+
+[node name="HexMesh" type="MeshInstance3D" parent="." unique_id=202375722]
+script = ExtResource("2_2vcw8")
