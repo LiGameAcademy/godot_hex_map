@@ -33,7 +33,8 @@ func get_cell(coords: HexCoordinates) -> HexCell:
 	
 func refresh() -> void:
 	#hex_mesh.triangulate(cells)
-	pass
+	for chunk in chunks:
+		chunk.refresh()
 
 func _create_chunks() -> void:
 	chunks.resize(chunk_count_x * chunk_count_z)
@@ -44,6 +45,7 @@ func _create_chunks() -> void:
 			chunk.name = "Chunk_%d_%d" % [x, z]
 			add_child(chunk)
 			chunks[idx] = chunk
+	refresh()
 
 func _create_cells() -> void:
 	cells.resize(cell_count_x * cell_count_z)
@@ -58,7 +60,6 @@ func _create_cell(x: int, z: int, index: int) -> void:
 	_add_cell_to_chunk(x, z, cell)
 
 	cell.color = Color.WHITE  # 默认白色，后续可改为可配置的 default_color
-	cell.elevation = 0
 	var pos := Vector3.ZERO
 	pos.x = (cell.coordinates.x + cell.coordinates.z * 0.5) * (HexMetrics.INNER_RADIUS * 2.0)
 	pos.z = cell.coordinates.z * (HexMetrics.OUTER_RADIUS * 1.5)

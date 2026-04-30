@@ -235,7 +235,7 @@ func _perturb(p: Vector3) -> Vector3:
 	q.x += noise.x * HexMetrics.CELL_PERTURB_STRENGTH
 	#q.y += noise.y * HexMetrics.CELL_PERTURB_STRENGTH
 	q.z += noise.z * HexMetrics.CELL_PERTURB_STRENGTH
-	print("noise: ", noise, " q: ", q)
+	#print("noise: ", noise, " q: ", q)
 	return q
 
 func _build_wireframe_mesh() -> void:

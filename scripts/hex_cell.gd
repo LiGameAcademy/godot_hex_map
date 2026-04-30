@@ -7,13 +7,16 @@ enum HexDirection { NE, E, SE, SW, W, NW }
 
 # 逻辑坐标（立方体坐标）
 var coordinates: HexCoordinates
-# 颜色，用于整张 Mesh 的顶点色
-var color: Color = Color.WHITE
 var position : Vector3
 var label : Label3D
 
 var neighbors: Array[HexCell] = [null, null, null, null, null, null]
 
+## 颜色，用于整张 Mesh 的顶点色
+var color: Color = Color.WHITE:
+	set(value):
+		color = value
+		_refresh()
 ## 海拔高度
 var elevation : int = 0:
 	set(value):
@@ -22,6 +25,7 @@ var elevation : int = 0:
 		var n := HexMetrics.sample_noise(position)
 		base_y += n.y * HexMetrics.ELEVATION_PERTURB_STRENGTH
 		position.y = base_y
+		_refresh()
 
 var chunk : HexGridChunk
 
@@ -65,3 +69,18 @@ func get_edge_type_by_cell(other_cell: HexCell) -> HexMetrics.HexEdgeType:
 	if not is_instance_valid(other_cell):
 		return HexMetrics.HexEdgeType.FLAT
 	return HexMetrics.get_edge_type(elevation, other_cell.elevation)
+
+func _refresh() -> void:
+	if not is_instance_valid(chunk):
+		push_error("HexCell: chunk is not valid")
+		return
+
+	# 1. 刷新自己所在的 Chunk
+	chunk.refresh()
+
+	# 2. 如果边在 Chunk 之间共享，再顺带刷新相邻 Chunk
+	for neighbor in neighbors:
+		if neighbor == null:
+			continue
+		if neighbor.chunk != chunk and is_instance_valid(neighbor.chunk):
+			neighbor.chunk.refresh()
