@@ -177,18 +177,34 @@ func _triangulate_boundary_triangle(
 	
 	_add_triangle([v2, left_v, boundary_v], [c2, left_color, boundary_color])
 
-func _add_triangle(vertices: PackedVector3Array, colors: PackedColorArray) -> void:
+func _add_quad(vertices: PackedVector3Array, colors: PackedColorArray, perturb: bool = true) -> void:
+	_add_triangle([vertices[0], vertices[2], vertices[3]], [colors[0], colors[2], colors[3]], perturb)
+	_add_triangle([vertices[1], vertices[0], vertices[3]], [colors[1], colors[0], colors[3]], perturb)
+
+func _add_triangle(vertices: PackedVector3Array, colors: PackedColorArray, perturb: bool = true) -> void:
+	var vs : PackedVector3Array
+	if perturb:
+		for v in vertices:
+			vs.append(_perturb(v))
+	else:
+		vs = vertices
 	for i in range(3):
 		_surface_tool.set_color(colors[i])
-		_surface_tool.add_vertex(vertices[i])
+		_surface_tool.add_vertex(vs[i])
 		#_wireframe_vertices.append(vertices[i])
-	_wireframe_vertices.append(vertices[0]); _wireframe_vertices.append(vertices[1])
-	_wireframe_vertices.append(vertices[1]); _wireframe_vertices.append(vertices[2])
-	_wireframe_vertices.append(vertices[2]); _wireframe_vertices.append(vertices[0])
+	_wireframe_vertices.append(vs[0]); _wireframe_vertices.append(vs[1])
+	_wireframe_vertices.append(vs[1]); _wireframe_vertices.append(vs[2])
+	_wireframe_vertices.append(vs[2]); _wireframe_vertices.append(vs[0])
 
-func _add_quad(vertices: PackedVector3Array, colors: PackedColorArray) -> void:
-	_add_triangle([vertices[0], vertices[2], vertices[3]], [colors[0], colors[2], colors[3]])
-	_add_triangle([vertices[1], vertices[0], vertices[3]], [colors[1], colors[0], colors[3]])
+## 使用 HexMetrics 的噪声对顶点进行扰动
+func _perturb(p: Vector3) -> Vector3:
+	var noise := HexMetrics.sample_noise(p)
+	var q := p
+	q.x += noise.x * HexMetrics.CELL_PERTURB_STRENGTH
+	q.y += noise.y * HexMetrics.CELL_PERTURB_STRENGTH
+	q.z += noise.z * HexMetrics.CELL_PERTURB_STRENGTH
+	print("noise: ", noise, " q: ", q)
+	return q
 
 func _build_wireframe_mesh() -> void:
 	var arrays := []

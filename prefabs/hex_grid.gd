@@ -4,20 +4,23 @@ class_name HexGrid
 
 @export var width := 6
 @export var height := 6
+@export var noise: FastNoiseLite
 
 @onready var hex_mesh: MeshInstance3D = $HexMesh
 
 var cells: Array[HexCell] = []
 
 func _ready() -> void:
+	HexMetrics.noise = noise
+
 	for z in height:
 		for x in width:
 			create_cell(x, z)
 	hex_mesh.triangulate(cells)
-	print(cells[0].coordinates)
-	for i in range(6):
-		var neighbor := cells[0].get_neighbor(i)
-		print(neighbor.coordinates if is_instance_valid(neighbor) else null)
+	#print(cells[0].coordinates)
+	#for i in range(6):
+		#var neighbor := cells[0].get_neighbor(i)
+		#print(neighbor.coordinates if is_instance_valid(neighbor) else null)
 
 func create_cell(x: int, z: int) -> void:
 	var cell : HexCell = HexCell.new()

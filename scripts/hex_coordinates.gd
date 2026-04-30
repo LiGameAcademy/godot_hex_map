@@ -45,19 +45,3 @@ static func from_position(position: Vector3) -> HexCoordinates:
 func _to_string() -> String:
 	return "(" + str(x) + "," + str(y) + "," + str(z) + ")"
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	

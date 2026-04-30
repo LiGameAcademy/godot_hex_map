@@ -35,6 +35,10 @@ const HORIZONTAL_TERRACE_STEP_SIZE := 1.0 / TERRACE_STEPS
 ## 垂直方向上每个 Terrace 的步长
 const VERTICAL_TERRACE_STEP_SIZE := 1.0 / float(TERRACES_PER_SLOPE + 1)
 
+const CELL_PERTURB_STRENGTH := 5.0
+
+static var noise: FastNoiseLite
+
 ## 获取第一个混合角点的坐标
 static func get_first_corner(index: int) -> Vector3:
 	return CORNERS[index]
@@ -80,3 +84,16 @@ static func get_edge_type(elevation_a: int, elevation_b: int) -> HexEdgeType:
 	if delta == 1:
 		return HexEdgeType.SLOPE
 	return HexEdgeType.CLIFF
+
+static func sample_noise(position: Vector3) -> Vector3:
+	if noise == null:
+		return Vector3.ZERO
+
+	var x := position.x
+	var y := position.y
+	var z := position.z
+
+	var nx := noise.get_noise_3d(x, y, z)
+	var ny := noise.get_noise_3d(x + 100.0, y + 200.0, z + 300.0)
+	var nz := noise.get_noise_3d(x - 100.0, y - 200.0, z - 300.0)
+	return Vector3(nx, ny, nz)

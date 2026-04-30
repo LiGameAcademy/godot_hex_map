@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://be8m8v571wab5" path="res://prefabs/hex_grid.gd" id="1_mmo8j"]
 [ext_resource type="Script" uid="uid://celdw1irt46w2" path="res://scripts/hex_mesh.gd" id="2_2vcw8"]
+[ext_resource type="FastNoiseLite" uid="uid://c438wsitnm4cr" path="res://resources/hex_noise.tres" id="2_rk35d"]
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_2vcw8"]
 _surfaces = [{
@@ -33,6 +34,7 @@ albedo_color = Color(0.004899827, 0.004899827, 0.004899827, 1)
 
 [node name="HexGrid" type="Node3D" unique_id=258472898]
 script = ExtResource("1_mmo8j")
+noise = ExtResource("2_rk35d")
 
 [node name="HexMesh" type="MeshInstance3D" parent="." unique_id=202375722]
 mesh = SubResource("ArrayMesh_2vcw8")
