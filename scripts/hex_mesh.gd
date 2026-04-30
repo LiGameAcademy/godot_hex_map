@@ -35,61 +35,77 @@ func _triangulate_cell_part(cell: HexCell, direction: int) -> void:
 	var center := cell.position
 	var v1 := center + HexMetrics.get_first_solid_corner(direction)
 	var v2 := center + HexMetrics.get_second_solid_corner(direction)
-	_add_triangle([center, v1, v2], [cell.color, cell.color, cell.color])
+	
+	#var e1 := v1.lerp(v2, 1.0 / 3.0)
+	#var e2 := v1.lerp(v2, 2.0 / 3.0)
+
+	#_add_triangle([center, v1, e1], [cell.color, cell.color, cell.color])
+	#_add_triangle([center, e1, e2], [cell.color, cell.color, cell.color])
+	#_add_triangle([center, e2, v2], [cell.color, cell.color, cell.color])
+	var edge := _make_edge(v1, v2)
+	_triangulate_fan(center, edge, cell.color)
 
 	#_add_quad([v1, v2, v3, v4], [cell.color, cell.color, bridge_color, bridge_color])
 	if direction <= HexCell.HexDirection.SE:
-		_triangulate_connection(cell, direction as HexCell.HexDirection, v1, v2)
+		_triangulate_connection(cell, direction as HexCell.HexDirection, edge)
 
-func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, v1: Vector3, v2: Vector3) -> void:
+func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edge: PackedVector3Array) -> void:
 	var neighbor := cell.get_neighbor(dir_index as HexCell.HexDirection)
 	if neighbor == null:
-		#neighbor = cell
 		return
 	var bridge := HexMetrics.get_bridge(dir_index)
-	var v3 := v1 + bridge
-	var v4 := v2 + bridge
-	v3.y = neighbor.position.y ; v4.y = v3.y
+	bridge.y = neighbor.position.y - cell.position.y
+	
+	var v3 := edge[0] + bridge
+	var v4 := edge[-1] + bridge
 
+	var edge2 := _make_edge(v3, v4)
 	if cell.get_edge_type(dir_index as HexCell.HexDirection) == HexMetrics.HexEdgeType.SLOPE:
-		_triangulate_edge_terraces([v1, v2, v3, v4], cell, neighbor)
+		_triangulate_edge_terraces(edge, edge2, cell, neighbor)
 	else:
-		_add_quad([v1, v2, v3, v4], [cell.color, cell.color, neighbor.color, neighbor.color])
+		_triangulate_strip(edge, edge2, cell.color, neighbor.color)
 	
 	var next_dir := cell.next_direction(dir_index)
 	var next_neighbor = cell.get_neighbor(next_dir)
 	if is_instance_valid(next_neighbor) and dir_index < HexCell.HexDirection.SE:
-		var v5 := v2 + HexMetrics.get_bridge(next_dir)
+		var v5 := edge[-1] + HexMetrics.get_bridge(next_dir)
 		v5.y = next_neighbor.position.y
 		#_add_triangle([v2, v4, v5], [cell.color, neighbor.color, next_neighbor.color])
 		if cell.elevation <= neighbor.elevation:
 			if cell.elevation <= next_neighbor.elevation:
-				_triangulate_corner(v2, v4, v5, cell, neighbor, next_neighbor)
+				_triangulate_corner(edge[-1], v4, v5, cell, neighbor, next_neighbor)
 			else:
-				_triangulate_corner(v5, v2, v4, next_neighbor, cell, neighbor)
+				_triangulate_corner(v5, edge[-1], v4, next_neighbor, cell, neighbor)
 		elif neighbor.elevation <= next_neighbor.elevation:
-			_triangulate_corner(v4, v5, v2, neighbor, next_neighbor, cell)
+			_triangulate_corner(v4, v5, edge[-1], neighbor, next_neighbor, cell)
 		else:
-			_triangulate_corner(v5, v2, v4, next_neighbor, cell, neighbor)
+			_triangulate_corner(v5, edge[-1], v4, next_neighbor, cell, neighbor)
 
-func _triangulate_edge_terraces(vertices: PackedVector3Array, begin_cell: HexCell, end_cell: HexCell) -> void:
+func _triangulate_edge_terraces(edge: PackedVector3Array, edge2: PackedVector3Array, begin_cell: HexCell, end_cell: HexCell) -> void:
 	var begin_color := begin_cell.color
 	var end_color := end_cell.color
 
-	var v3 := HexMetrics.terrace_lerp(vertices[0], vertices[2], 1)
-	var v4 := HexMetrics.terrace_lerp(vertices[1], vertices[3], 1)
+	#var v3 := HexMetrics.terrace_lerp(vertices[0], vertices[2], 1)
+	#var v4 := HexMetrics.terrace_lerp(vertices[1], vertices[3], 1)
+	var e2 := _terrace_lerp_edge(edge, edge2, 1)
 	var c2 := HexMetrics.terrace_lerp_color(begin_color, end_color, 1)
 
-	_add_quad([vertices[0], vertices[1], v3, v4], [begin_color, begin_color, c2, c2])
+	#_add_quad([vertices[0], vertices[1], v3, v4], [begin_color, begin_color, c2, c2])
+	_triangulate_strip(edge, e2, begin_cell.color, c2)
+
 	for i in range(2, HexMetrics.TERRACE_STEPS):
-		var v1 = v3
-		var v2 = v4
+		#var v1 = v3
+		#var v2 = v4
+		var e1 := e2
 		var c1 = c2
-		v3 = HexMetrics.terrace_lerp(vertices[0], vertices[2], i)
-		v4 = HexMetrics.terrace_lerp(vertices[1], vertices[3], i)
-		c2 = HexMetrics.terrace_lerp_color(begin_cell.color, end_cell.color, i)
-		_add_quad([v1, v2, v3, v4], [c1, c1, c2, c2])
-	_add_quad([v3, v4, vertices[2], vertices[3]], [c2, c2, end_color, end_color])
+		#v3 = HexMetrics.terrace_lerp(vertices[0], vertices[2], i)
+		#v4 = HexMetrics.terrace_lerp(vertices[1], vertices[3], i)
+		e2 = _terrace_lerp_edge(edge, edge2, i)
+		c2 = HexMetrics.terrace_lerp_color(begin_color, end_color, i)
+		#_add_quad([v1, v2, v3, v4], [c1, c1, c2, c2])
+		_triangulate_strip(e1, e2, c1, c2)
+	#_add_quad([v3, v4, vertices[2], vertices[3]], [c2, c2, end_color, end_color])
+	_triangulate_strip(e2, edge2, c2, end_color)
 
 func _triangulate_corner(
 		bottom_v: Vector3, left_v: Vector3, right_v: Vector3, 
@@ -176,6 +192,30 @@ func _triangulate_boundary_triangle(
 		_add_triangle([v1, v2, boundary_v], [c1, c2, boundary_color])
 	
 	_add_triangle([v2, left_v, boundary_v], [c2, left_color, boundary_color])
+
+func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
+	var colors := [color, color, color]
+	for i in range(edge.size() - 1):
+		_add_triangle([center, edge[i], edge[i + 1]], colors)
+
+func _triangulate_strip(from: PackedVector3Array, to: PackedVector3Array, c1: Color, c2: Color) -> void:
+	var colors := [c1, c1, c2, c2]
+	for i in range(from.size() - 1):
+		_add_quad([from[i], from[i + 1], to[i], to[i + 1]], colors)
+
+func _make_edge(a: Vector3, b: Vector3, outer_step: float = 0.25) -> PackedVector3Array:
+	var vs : PackedVector3Array
+	var count := 1 / outer_step
+	for i in range(count):
+		vs.append(a.lerp(b, i / (count - 1)))
+	return vs
+
+func _terrace_lerp_edge(a: PackedVector3Array, b: PackedVector3Array, step: int) -> PackedVector3Array:
+	var o: PackedVector3Array = []
+	o.resize(a.size())
+	for i in range(a.size()):
+		o[i] = HexMetrics.terrace_lerp(a[i], b[i], step)
+	return o
 
 func _add_quad(vertices: PackedVector3Array, colors: PackedColorArray, perturb: bool = true) -> void:
 	_add_triangle([vertices[0], vertices[2], vertices[3]], [colors[0], colors[2], colors[3]], perturb)
