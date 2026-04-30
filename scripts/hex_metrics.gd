@@ -1,6 +1,12 @@
 extends Object
 class_name HexMetrics
 
+enum HexEdgeType { 
+	FLAT, 	## 平坦
+	SLOPE, 	## 斜坡
+	CLIFF, 	## 悬崖
+}
+
 const OUTER_RADIUS := 10.0
 # 根号3除以2 约等于 0.866025404
 const INNER_RADIUS := OUTER_RADIUS * 0.866025404
@@ -66,3 +72,11 @@ static func terrace_lerp(a: Vector3, b: Vector3, step: int) -> Vector3:
 static func terrace_lerp_color(a: Color, b: Color, step: int) -> Color:
 	var h := step * HORIZONTAL_TERRACE_STEP_SIZE
 	return a.lerp(b, h)
+
+static func get_edge_type(elevation_a: int, elevation_b: int) -> HexEdgeType:
+	if elevation_a == elevation_b:
+		return HexEdgeType.FLAT
+	var delta : int = absi(elevation_b - elevation_a)
+	if delta == 1:
+		return HexEdgeType.SLOPE
+	return HexEdgeType.CLIFF

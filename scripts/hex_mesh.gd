@@ -51,15 +51,26 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, v1:
 	var v4 := v2 + bridge
 	v3.y = neighbor.position.y ; v4.y = v3.y
 
-	#_add_quad([v1, v2, v3, v4], [cell.color, cell.color, neighbor.color, neighbor.color])
-	_triangulate_edge_terraces([v1, v2, v3, v4], cell, neighbor)
+	if cell.get_edge_type(dir_index as HexCell.HexDirection) == HexMetrics.HexEdgeType.SLOPE:
+		_triangulate_edge_terraces([v1, v2, v3, v4], cell, neighbor)
+	else:
+		_add_quad([v1, v2, v3, v4], [cell.color, cell.color, neighbor.color, neighbor.color])
 	
 	var next_dir := cell.next_direction(dir_index)
 	var next_neighbor = cell.get_neighbor(next_dir)
 	if is_instance_valid(next_neighbor) and dir_index < HexCell.HexDirection.SE:
 		var v5 := v2 + HexMetrics.get_bridge(next_dir)
 		v5.y = next_neighbor.position.y
-		_add_triangle([v2, v4, v5], [cell.color, neighbor.color, next_neighbor.color])
+		#_add_triangle([v2, v4, v5], [cell.color, neighbor.color, next_neighbor.color])
+		if cell.elevation <= neighbor.elevation:
+			if cell.elevation <= next_neighbor.elevation:
+				_triangulate_corner(v2, v4, v5, cell, neighbor, next_neighbor)
+			else:
+				_triangulate_corner(v5, v2, v4, next_neighbor, cell, neighbor)
+		elif neighbor.elevation <= next_neighbor.elevation:
+			_triangulate_corner(v4, v5, v2, neighbor, next_neighbor, cell)
+		else:
+			_triangulate_corner(v5, v2, v4, next_neighbor, cell, neighbor)
 
 func _triangulate_edge_terraces(vertices: PackedVector3Array, begin_cell: HexCell, end_cell: HexCell) -> void:
 	var begin_color := begin_cell.color
@@ -79,6 +90,92 @@ func _triangulate_edge_terraces(vertices: PackedVector3Array, begin_cell: HexCel
 		c2 = HexMetrics.terrace_lerp_color(begin_cell.color, end_cell.color, i)
 		_add_quad([v1, v2, v3, v4], [c1, c1, c2, c2])
 	_add_quad([v3, v4, vertices[2], vertices[3]], [c2, c2, end_color, end_color])
+
+func _triangulate_corner(
+		bottom_v: Vector3, left_v: Vector3, right_v: Vector3, 
+		bottom_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
+	var left_edge_type := bottom_cell.get_edge_type_by_cell(left_cell)
+	var right_edge_type := bottom_cell.get_edge_type_by_cell(right_cell)
+			
+	if left_edge_type == HexMetrics.HexEdgeType.SLOPE:
+		if right_edge_type == HexMetrics.HexEdgeType.SLOPE:
+			_triangulate_corner_terraces(bottom_v, left_v, right_v, bottom_cell, left_cell, right_cell)
+		elif right_edge_type == HexMetrics.HexEdgeType.FLAT:
+			_triangulate_corner_terraces(left_v, right_v, bottom_v, left_cell, right_cell, bottom_cell)
+		else:
+			_triangulate_corner_terraces_cliff(bottom_v, left_v, right_v, bottom_cell, left_cell, right_cell)
+	elif right_edge_type == HexMetrics.HexEdgeType.SLOPE:
+		if left_edge_type == HexMetrics.HexEdgeType.FLAT:
+			_triangulate_corner_terraces(right_v, bottom_v, left_v, right_cell, bottom_cell, left_cell)
+		else:
+			_triangulate_corner_cliff_terraces(bottom_v, left_v, right_v, bottom_cell, left_cell, right_cell)
+	elif left_cell.get_edge_type_by_cell(right_cell) == HexMetrics.HexEdgeType.SLOPE:
+		if left_cell.elevation <= right_cell.elevation:
+			_triangulate_corner_cliff_terraces(right_v, bottom_v, left_v, right_cell, bottom_cell, left_cell)
+		else:
+			_triangulate_corner_terraces_cliff(left_v, right_v, bottom_v, left_cell, right_cell, bottom_cell)
+	else:
+		# 涵盖了我们尚未讨论过的所有剩余情况，包括 FFF、CCF、CCCR 和 CCCL。它们都用一个三角形表示
+		_add_triangle([bottom_v, left_v, right_v], [bottom_cell.color, left_cell.color, right_cell.color])
+
+func _triangulate_corner_terraces(
+		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
+		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
+	var v3 = HexMetrics.terrace_lerp(begin_v, left_v, 1);
+	var v4 = HexMetrics.terrace_lerp(begin_v, right_v, 1)
+	var c3 = HexMetrics.terrace_lerp_color(begin_cell.color, left_cell.color, 1)
+	var c4 = HexMetrics.terrace_lerp_color(begin_cell.color, right_cell.color, 1)
+
+	_add_triangle([begin_v, v3, v4], [begin_cell.color, c3, c4])
+	for i in range(2, HexMetrics.TERRACE_STEPS):
+		var v1 = v3; var v2 = v4
+		var c1 = c3; var c2 = c4
+		v3 = HexMetrics.terrace_lerp(begin_v, left_v, i)
+		v4 = HexMetrics.terrace_lerp(begin_v, right_v, i)
+		c3 = HexMetrics.terrace_lerp_color(begin_cell.color, left_cell.color, i)
+		c4 = HexMetrics.terrace_lerp_color(begin_cell.color, right_cell.color, i)
+		_add_quad([v1, v2, v3, v4], [c1, c2, c3, c4])
+	_add_quad([v3, v4, left_v, right_v], [c3, c4, left_cell.color, right_cell.color])
+
+func _triangulate_corner_terraces_cliff(
+		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
+		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
+	var b : float = absf(1.0 / (right_cell.elevation - begin_cell.elevation))
+	var boundary : Vector3 = begin_v.lerp(right_v, b)
+	var boundary_color : Color = begin_cell.color.lerp(right_cell.color, b)
+	_triangulate_boundary_triangle(begin_v, left_v, boundary, begin_cell.color, left_cell.color, boundary_color)
+	if left_cell.get_edge_type_by_cell(right_cell) == HexMetrics.HexEdgeType.SLOPE:
+		_triangulate_boundary_triangle(left_v, right_v, boundary, left_cell.color, right_cell.color, boundary_color)
+	else:
+		_add_triangle([left_v, right_v, boundary], [left_cell.color, right_cell.color, boundary_color])
+
+func _triangulate_corner_cliff_terraces(
+		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
+		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
+	var b : float = abs(1.0 / (left_cell.elevation - begin_cell.elevation))
+	var boundary : Vector3 = begin_v.lerp(left_v, b)
+	var boundary_color : Color = begin_cell.color.lerp(left_cell.color, b)
+	
+	_triangulate_boundary_triangle(right_v, begin_v, boundary, right_cell.color, begin_cell.color, boundary_color)
+	if left_cell.get_edge_type_by_cell(right_cell) == HexMetrics.HexEdgeType.SLOPE:
+		_triangulate_boundary_triangle(left_v, right_v, boundary, left_cell.color, right_cell.color, boundary_color)
+	else:
+		_add_triangle([left_v, right_v, boundary], [left_cell.color, right_cell.color, boundary_color])
+
+func _triangulate_boundary_triangle(
+		begin_v: Vector3, left_v: Vector3, boundary_v: Vector3, 
+		begin_color: Color, left_color: Color, boundary_color: Color) -> void:
+	var v2 := HexMetrics.terrace_lerp(begin_v, left_v, 1)
+	var c2 := HexMetrics.terrace_lerp_color(begin_color, left_color, 1)
+	_add_triangle([begin_v, v2, boundary_v], [begin_color, c2, boundary_color])
+	
+	for i in range(2, HexMetrics.TERRACE_STEPS):
+		var v1 = v2; var c1 = c2
+		v2 = HexMetrics.terrace_lerp(begin_v, left_v, i)
+		c2 = HexMetrics.terrace_lerp_color(begin_color, left_color, i)
+		_add_triangle([v1, v2, boundary_v], [c1, c2, boundary_color])
+	
+	_add_triangle([v2, left_v, boundary_v], [c2, left_color, boundary_color])
 
 func _add_triangle(vertices: PackedVector3Array, colors: PackedColorArray) -> void:
 	for i in range(3):

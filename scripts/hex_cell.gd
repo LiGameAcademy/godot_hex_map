@@ -50,3 +50,14 @@ func next_direction(direction: HexDirection) -> HexDirection:
 ## 上一个方向
 func previous_direction(direction: HexDirection) -> HexDirection:
 	return (direction - 1) % 6 as HexDirection
+
+func get_edge_type(direction: HexDirection) -> HexMetrics.HexEdgeType:
+	var neighbor = get_neighbor(direction)
+	if neighbor == null:
+		return HexMetrics.HexEdgeType.FLAT
+	return HexMetrics.get_edge_type(elevation, neighbor.elevation)
+
+func get_edge_type_by_cell(other_cell: HexCell) -> HexMetrics.HexEdgeType:
+	if not is_instance_valid(other_cell):
+		return HexMetrics.HexEdgeType.FLAT
+	return HexMetrics.get_edge_type(elevation, other_cell.elevation)
