@@ -85,26 +85,16 @@ func _triangulate_edge_terraces(edge: PackedVector3Array, edge2: PackedVector3Ar
 	var begin_color := begin_cell.color
 	var end_color := end_cell.color
 
-	#var v3 := HexMetrics.terrace_lerp(vertices[0], vertices[2], 1)
-	#var v4 := HexMetrics.terrace_lerp(vertices[1], vertices[3], 1)
 	var e2 := _terrace_lerp_edge(edge, edge2, 1)
 	var c2 := HexMetrics.terrace_lerp_color(begin_color, end_color, 1)
 
-	#_add_quad([vertices[0], vertices[1], v3, v4], [begin_color, begin_color, c2, c2])
 	_triangulate_strip(edge, e2, begin_cell.color, c2)
-
 	for i in range(2, HexMetrics.TERRACE_STEPS):
-		#var v1 = v3
-		#var v2 = v4
 		var e1 := e2
 		var c1 = c2
-		#v3 = HexMetrics.terrace_lerp(vertices[0], vertices[2], i)
-		#v4 = HexMetrics.terrace_lerp(vertices[1], vertices[3], i)
 		e2 = _terrace_lerp_edge(edge, edge2, i)
 		c2 = HexMetrics.terrace_lerp_color(begin_color, end_color, i)
-		#_add_quad([v1, v2, v3, v4], [c1, c1, c2, c2])
 		_triangulate_strip(e1, e2, c1, c2)
-	#_add_quad([v3, v4, vertices[2], vertices[3]], [c2, c2, end_color, end_color])
 	_triangulate_strip(e2, edge2, c2, end_color)
 
 func _triangulate_corner(
@@ -157,41 +147,43 @@ func _triangulate_corner_terraces_cliff(
 		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
 		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
 	var b : float = absf(1.0 / (right_cell.elevation - begin_cell.elevation))
-	var boundary : Vector3 = begin_v.lerp(right_v, b)
+	var boundary : Vector3 = _perturb(begin_v).lerp(_perturb(right_v), b)
 	var boundary_color : Color = begin_cell.color.lerp(right_cell.color, b)
+	
 	_triangulate_boundary_triangle(begin_v, left_v, boundary, begin_cell.color, left_cell.color, boundary_color)
 	if left_cell.get_edge_type_by_cell(right_cell) == HexMetrics.HexEdgeType.SLOPE:
 		_triangulate_boundary_triangle(left_v, right_v, boundary, left_cell.color, right_cell.color, boundary_color)
 	else:
-		_add_triangle([left_v, right_v, boundary], [left_cell.color, right_cell.color, boundary_color])
+		#_add_triangle([left_v, right_v, boundary], [left_cell.color, right_cell.color, boundary_color])
+		_add_triangle([_perturb(left_v), _perturb(right_v), boundary], [left_cell.color, right_cell.color, boundary_color], false)
 
 func _triangulate_corner_cliff_terraces(
 		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
 		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
 	var b : float = abs(1.0 / (left_cell.elevation - begin_cell.elevation))
-	var boundary : Vector3 = begin_v.lerp(left_v, b)
+	var boundary : Vector3 = _perturb(begin_v).lerp(_perturb(left_v), b)
 	var boundary_color : Color = begin_cell.color.lerp(left_cell.color, b)
 	
 	_triangulate_boundary_triangle(right_v, begin_v, boundary, right_cell.color, begin_cell.color, boundary_color)
 	if left_cell.get_edge_type_by_cell(right_cell) == HexMetrics.HexEdgeType.SLOPE:
 		_triangulate_boundary_triangle(left_v, right_v, boundary, left_cell.color, right_cell.color, boundary_color)
 	else:
-		_add_triangle([left_v, right_v, boundary], [left_cell.color, right_cell.color, boundary_color])
+		_add_triangle([_perturb(left_v), _perturb(right_v), boundary], [left_cell.color, right_cell.color, boundary_color], false)
 
 func _triangulate_boundary_triangle(
 		begin_v: Vector3, left_v: Vector3, boundary_v: Vector3, 
 		begin_color: Color, left_color: Color, boundary_color: Color) -> void:
 	var v2 := HexMetrics.terrace_lerp(begin_v, left_v, 1)
 	var c2 := HexMetrics.terrace_lerp_color(begin_color, left_color, 1)
-	_add_triangle([begin_v, v2, boundary_v], [begin_color, c2, boundary_color])
+	_add_triangle([_perturb(begin_v), _perturb(v2), boundary_v], [begin_color, c2, boundary_color], false)
 	
 	for i in range(2, HexMetrics.TERRACE_STEPS):
 		var v1 = v2; var c1 = c2
 		v2 = HexMetrics.terrace_lerp(begin_v, left_v, i)
 		c2 = HexMetrics.terrace_lerp_color(begin_color, left_color, i)
-		_add_triangle([v1, v2, boundary_v], [c1, c2, boundary_color])
+		_add_triangle([_perturb(v1), _perturb(v2), boundary_v], [c1, c2, boundary_color], false)
 	
-	_add_triangle([v2, left_v, boundary_v], [c2, left_color, boundary_color])
+	_add_triangle([_perturb(v2), _perturb(left_v), boundary_v], [c2, left_color, boundary_color], false)
 
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
 	var colors := [color, color, color]
