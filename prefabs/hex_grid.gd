@@ -1,3 +1,4 @@
+@tool
 extends Node3D
 class_name HexGrid
 
@@ -13,6 +14,10 @@ func _ready() -> void:
 		for x in width:
 			create_cell(x, z)
 	hex_mesh.triangulate(cells)
+	print(cells[0].coordinates)
+	for i in range(6):
+		var neighbor := cells[0].get_neighbor(i)
+		print(neighbor.coordinates if is_instance_valid(neighbor) else null)
 
 func create_cell(x: int, z: int) -> void:
 	var cell : HexCell = HexCell.new()
@@ -23,8 +28,22 @@ func create_cell(x: int, z: int) -> void:
 	pos.z = cell.coordinates.z * (HexMetrics.OUTER_RADIUS * 1.5)
 	cell.position = pos
 	cell.label = _create_coordinates_label(cell)
-	cells.append(cell)
 	add_child(cell.label)
+	
+	# 1. 认领西边 (W) 的邻居
+	if x > 0:
+		cell.set_neighbor(HexCell.HexDirection.W, cells[cells.size() - 1])
+	# 2. 认领北边 (NW 和 NE) 的邻居（第一行没有北边邻居）
+	if z > 0:
+		if z % 2 == 0:
+			if x > 0:
+				cell.set_neighbor(HexCell.HexDirection.NW, cells[cells.size() - width - 1])
+			cell.set_neighbor(HexCell.HexDirection.NE, cells[cells.size() - width])
+		else:
+			cell.set_neighbor(HexCell.HexDirection.NW, cells[cells.size() - width])
+			if x < width - 1:
+				cell.set_neighbor(HexCell.HexDirection.NE, cells[cells.size() - width + 1])
+	cells.append(cell)
 
 func get_cell(coords: HexCoordinates) -> HexCell:
 	return cells.filter(
@@ -42,4 +61,5 @@ func _create_coordinates_label(cell: HexCell) -> Label3D:
 	label.position = cell.position
 	label.position.y += 1
 	label.name = "cell_" + str(cell.coordinates)
+	label.set_meta("cell", cell)
 	return label
