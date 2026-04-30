@@ -19,6 +19,8 @@ var elevation : int = 0:
 	set(value):
 		elevation = value
 		var base_y := float(elevation) * HexMetrics.ELEVATION_STEP
+		var n := HexMetrics.sample_noise(position)
+		base_y += n.y * HexMetrics.ELEVATION_PERTURB_STRENGTH
 		position.y = base_y
 
 ## 获取邻居

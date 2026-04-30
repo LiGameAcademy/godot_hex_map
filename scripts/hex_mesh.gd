@@ -201,7 +201,7 @@ func _perturb(p: Vector3) -> Vector3:
 	var noise := HexMetrics.sample_noise(p)
 	var q := p
 	q.x += noise.x * HexMetrics.CELL_PERTURB_STRENGTH
-	q.y += noise.y * HexMetrics.CELL_PERTURB_STRENGTH
+	#q.y += noise.y * HexMetrics.CELL_PERTURB_STRENGTH
 	q.z += noise.z * HexMetrics.CELL_PERTURB_STRENGTH
 	print("noise: ", noise, " q: ", q)
 	return q

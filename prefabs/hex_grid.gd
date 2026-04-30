@@ -47,6 +47,7 @@ func create_cell(x: int, z: int) -> void:
 			if x < width - 1:
 				cell.set_neighbor(HexCell.HexDirection.NE, cells[cells.size() - width + 1])
 	cells.append(cell)
+	cell.elevation = 0
 
 func get_cell(coords: HexCoordinates) -> HexCell:
 	return cells.filter(
