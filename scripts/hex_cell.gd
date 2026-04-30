@@ -14,6 +14,12 @@ var label : Label3D
 
 var neighbors: Array[HexCell] = [null, null, null, null, null, null]
 
+## 海拔高度
+var elevation : int = 0:
+	set(value):
+		elevation = value
+		var base_y := float(elevation) * HexMetrics.ELEVATION_STEP
+		position.y = base_y
 
 ## 获取邻居
 func get_neighbor(direction: HexDirection) -> HexCell:

@@ -13,6 +13,7 @@ var _wireframe_vertices: PackedVector3Array = []
 
 ## 网格三角剖分
 func triangulate(cells: Array[HexCell]) -> void:
+	_wireframe_vertices.clear()
 	_surface_tool.clear()
 	_surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for cell in cells:
@@ -45,27 +46,39 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, v1:
 	if neighbor == null:
 		#neighbor = cell
 		return
-	#var center := cell.position
-	#var pre_dir := cell.previous_direction(dir_index)
-	#var prev_neighbor := cell.get_neighbor(pre_dir)
-	#if not is_instance_valid(prev_neighbor):
-		#prev_neighbor = cell
-	#var next_neighbor := cell.get_next_neighbor(dir_index as HexCell.HexDirection)
-	#if not is_instance_valid(next_neighbor):
-		#next_neighbor = cell
 	var bridge := HexMetrics.get_bridge(dir_index)
 	var v3 := v1 + bridge
 	var v4 := v2 + bridge
-	#var color1 := (prev_neighbor.color + cell.color + neighbor.color) / 3
-	#var color2 := (neighbor.color + cell.color + next_neighbor.color) / 3
-	#var bridge_color := (cell.color + neighbor.color) * 0.5
+	v3.y = neighbor.position.y ; v4.y = v3.y
 
-	# var bridge_color := (cell.color + neighbor.color) * 0.5
-	_add_quad([v1, v2, v3, v4], [cell.color, cell.color, neighbor.color, neighbor.color])
+	#_add_quad([v1, v2, v3, v4], [cell.color, cell.color, neighbor.color, neighbor.color])
+	_triangulate_edge_terraces([v1, v2, v3, v4], cell, neighbor)
+	
 	var next_dir := cell.next_direction(dir_index)
 	var next_neighbor = cell.get_neighbor(next_dir)
 	if is_instance_valid(next_neighbor) and dir_index < HexCell.HexDirection.SE:
-		_add_triangle([v2, v4, v2 + HexMetrics.get_bridge(next_dir)], [cell.color, neighbor.color, next_neighbor.color])
+		var v5 := v2 + HexMetrics.get_bridge(next_dir)
+		v5.y = next_neighbor.position.y
+		_add_triangle([v2, v4, v5], [cell.color, neighbor.color, next_neighbor.color])
+
+func _triangulate_edge_terraces(vertices: PackedVector3Array, begin_cell: HexCell, end_cell: HexCell) -> void:
+	var begin_color := begin_cell.color
+	var end_color := end_cell.color
+
+	var v3 := HexMetrics.terrace_lerp(vertices[0], vertices[2], 1)
+	var v4 := HexMetrics.terrace_lerp(vertices[1], vertices[3], 1)
+	var c2 := HexMetrics.terrace_lerp_color(begin_color, end_color, 1)
+
+	_add_quad([vertices[0], vertices[1], v3, v4], [begin_color, begin_color, c2, c2])
+	for i in range(2, HexMetrics.TERRACE_STEPS):
+		var v1 = v3
+		var v2 = v4
+		var c1 = c2
+		v3 = HexMetrics.terrace_lerp(vertices[0], vertices[2], i)
+		v4 = HexMetrics.terrace_lerp(vertices[1], vertices[3], i)
+		c2 = HexMetrics.terrace_lerp_color(begin_cell.color, end_cell.color, i)
+		_add_quad([v1, v2, v3, v4], [c1, c1, c2, c2])
+	_add_quad([v3, v4, vertices[2], vertices[3]], [c2, c2, end_color, end_color])
 
 func _add_triangle(vertices: PackedVector3Array, colors: PackedColorArray) -> void:
 	for i in range(3):

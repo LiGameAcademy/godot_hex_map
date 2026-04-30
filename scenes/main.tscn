@@ -34,3 +34,13 @@ transform = Transform3D(1, 0, 0, 0, 0.2654383, 0.96412784, 0, -0.96412784, 0.265
 script = ExtResource("2_0wfyh")
 hex_grid = NodePath("../HexGrid")
 metadata/_custom_type_script = "uid://dmgota36soris"
+
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=207554144]
+layer = 128
+
+[node name="RefreshButton" type="Button" parent="UILayer" unique_id=701630130]
+offset_right = 8.0
+offset_bottom = 8.0
+text = "刷新"
+
+[connection signal="pressed" from="UILayer/RefreshButton" to="HexGrid" method="refresh"]

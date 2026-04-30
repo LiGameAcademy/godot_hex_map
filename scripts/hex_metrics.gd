@@ -18,6 +18,17 @@ const CORNERS: Array[Vector3] = [
 const SOLID_FACTOR := 0.75
 const BLEND_FACTOR := 1.0 - SOLID_FACTOR
 
+## 每个单位高度对应的高度偏移量
+const ELEVATION_STEP := 5.0
+## 每个斜坡段包含的 Terrace 数量
+const TERRACES_PER_SLOPE := 2
+## 每个斜坡段包含的 Terrace 总数
+const TERRACE_STEPS := TERRACES_PER_SLOPE * 2 + 1
+## 水平方向上每个 Terrace 的步长
+const HORIZONTAL_TERRACE_STEP_SIZE := 1.0 / TERRACE_STEPS
+## 垂直方向上每个 Terrace 的步长
+const VERTICAL_TERRACE_STEP_SIZE := 1.0 / float(TERRACES_PER_SLOPE + 1)
+
 ## 获取第一个混合角点的坐标
 static func get_first_corner(index: int) -> Vector3:
 	return CORNERS[index]
@@ -35,3 +46,23 @@ static func get_second_solid_corner(index: int) -> Vector3:
 ## 获取“从内角点走到边界中点”的偏移向量，用于构建边界桥梁
 static func get_bridge(index: int) -> Vector3:
 	return (CORNERS[index] + CORNERS[index + 1]) * BLEND_FACTOR
+
+## 获取台阶插值
+static func get_terrace_interpolation(a: float, b: float, step: float) -> float:
+	return a + step * (b - a)
+
+## 台阶插值：水平每步都移动，垂直仅在奇数步变化，形成”平台+陡坡”的阶梯
+static func terrace_lerp(a: Vector3, b: Vector3, step: int) -> Vector3:
+	var h := step * HORIZONTAL_TERRACE_STEP_SIZE
+	var v_step: int = (step + 1) >> 1  # 1→1, 2→1, 3→2, 4→2，Y 只在奇数 step 变
+	var v := float(v_step) * VERTICAL_TERRACE_STEP_SIZE
+
+	return Vector3(
+		a.x + (b.x - a.x) * h,
+		a.y + (b.y - a.y) * v,
+		a.z + (b.z - a.z) * h
+	)
+
+static func terrace_lerp_color(a: Color, b: Color, step: int) -> Color:
+	var h := step * HORIZONTAL_TERRACE_STEP_SIZE
+	return a.lerp(b, h)

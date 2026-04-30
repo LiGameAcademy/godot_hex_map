@@ -9,6 +9,8 @@ class_name HexMapEditor
 	Color.BLUE
 ]
 var active_color: Color = colors[0] # 默认画笔红色
+## 当前海拔等级
+var active_elevation: int = 0  
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(hex_grid):
@@ -24,6 +26,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_1: active_color = colors[0]
 			KEY_2: active_color = colors[1]
 			KEY_3: active_color = colors[2]
+			KEY_Q: active_elevation -= 1
+			KEY_E: active_elevation += 1
 
 func _handle_click(mouse_pos: Vector2) -> void:
 	var camera := get_viewport().get_camera_3d()
@@ -37,6 +41,7 @@ func _handle_click(mouse_pos: Vector2) -> void:
 		if is_instance_valid(cell):
 			# 染色
 			cell.color = active_color
+			cell.elevation = active_elevation
 			hex_grid.refresh()
 		else:
 			push_error("HexMapEditor: cell is not valid!")
