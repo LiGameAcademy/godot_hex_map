@@ -23,6 +23,8 @@ var elevation : int = 0:
 		base_y += n.y * HexMetrics.ELEVATION_PERTURB_STRENGTH
 		position.y = base_y
 
+var chunk : HexGridChunk
+
 ## 获取邻居
 func get_neighbor(direction: HexDirection) -> HexCell:
 	return neighbors[direction]
