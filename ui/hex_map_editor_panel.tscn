@@ -113,6 +113,30 @@ layout_mode = 2
 size_flags_horizontal = 3
 max_value = 10.0
 
+[node name="MarginContainer4" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=152368572]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer4" unique_id=1946762290]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer4/HBoxContainer" unique_id=934320753]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "河流模式"
+
+[node name="OptionButtonRiver" type="OptionButton" parent="MarginContainer/VBoxContainer/MarginContainer4/HBoxContainer" unique_id=1342473937]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 3
+popup/item_0/text = "忽略"
+popup/item_0/id = 0
+popup/item_1/text = "添加"
+popup/item_1/id = 1
+popup/item_2/text = "移除"
+popup/item_2/id = 2
+
 [node name="RefreshButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1925217280]
 unique_name_in_owner = true
 layout_mode = 2

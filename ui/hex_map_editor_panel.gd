@@ -4,6 +4,7 @@ extends MarginContainer
 @onready var spin_box_elevation: SpinBox = %SpinBoxElevation
 @onready var check_box_elevation: CheckBox = %CheckBoxElevation
 @onready var spin_box_brush_size: SpinBox = %SpinBoxBrushSize
+@onready var option_button_river: OptionButton = %OptionButtonRiver
 @onready var refresh_button: Button = %RefreshButton
 
 ## 表现层：负责 UI 展示与交互输入，依赖 HexMapEditor 逻辑层的 API / signal
@@ -45,6 +46,10 @@ func _ready() -> void:
 	spin_box_brush_size.value_changed.connect(
 		func(value: float) -> void:
 			editor.set_brush_radius(int(value))
+	)
+	option_button_river.item_selected.connect(
+		func(index : int) -> void:
+			editor.river_mode = index as HexMapEditor.RiverMode
 	)
 	refresh_button.pressed.connect(
 		func() -> void:

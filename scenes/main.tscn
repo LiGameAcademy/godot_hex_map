@@ -28,6 +28,7 @@ transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545
 shadow_enabled = true
 
 [node name="HexGrid" parent="." unique_id=258472898 instance=ExtResource("1_o5qli")]
+noise = null
 
 [node name="HexMapCamera" parent="." unique_id=2101402743 node_paths=PackedStringArray("grid") instance=ExtResource("2_sugp2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 57.87253, 0)

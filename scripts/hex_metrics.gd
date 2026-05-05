@@ -42,6 +42,9 @@ const ELEVATION_PERTURB_STRENGTH := 1.5
 const CHUNK_SIZE_X := 5
 const CHUNK_SIZE_Z := 5
 
+## 河床相对格子海拔的高度偏移（负值表示比地面低）
+const STREAM_BED_ELEVATION_OFFSET: float = -1.0
+
 static var noise: FastNoiseLite
 
 ## 获取第一个混合角点的坐标

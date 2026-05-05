@@ -36,6 +36,11 @@ var has_outgoing_river: bool = false
 var incoming_river: HexDirection
 var outgoing_river: HexDirection
 
+## 获取河床的 Y 坐标
+var stream_bed_y: float:
+	get:
+		return (elevation + HexMetrics.STREAM_BED_ELEVATION_OFFSET) * HexMetrics.ELEVATION_STEP
+
 var chunk : HexGridChunk
 
 #region 邻居海拔

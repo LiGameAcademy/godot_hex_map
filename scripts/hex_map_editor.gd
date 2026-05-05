@@ -1,6 +1,8 @@
 extends Node
 class_name HexMapEditor
 
+enum RiverMode { IGNORE, ADD, REMOVE }
+
 @export var hex_grid: HexGrid
 # 可以在编辑器中编辑颜色
 @export var colors : Dictionary[StringName, Color] = {
@@ -10,12 +12,16 @@ class_name HexMapEditor
 }
 
 @export var active_color: int = 0 # 默认画笔红色
+@export var disable_color : bool = false
 ## 当前海拔等级
 @export var active_elevation: int = 0  
-@export var brush_radius: int = 0
-
-@export var disable_color : bool = false
 @export var disable_elevation : bool = false
+@export var brush_radius: int = 0
+@export var river_mode: RiverMode = RiverMode.IGNORE
+
+var _previous_cell: HexCell = null
+var _is_drag: bool = false
+var _drag_direction: HexCell.HexDirection
 
 signal active_color_changed(color: Color)
 signal color_disable_changed()
@@ -27,10 +33,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(hex_grid):
 		return
 
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			_handle_click(event.position)
-
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			# 按下时：视为新一次操作，不当作拖拽；只刷当前格（颜色/海拔），河流不生效
+			_is_drag = false
+			_handle_click_or_drag(event.position, false)
+		else:
+			_previous_cell = null
+			_is_drag = false
+	elif event is InputEventMouseMotion and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
+		# 左键按住并移动：才可能算作拖拽，此时再根据 _previous_cell 与当前格判断是否画河
+		_handle_click_or_drag(event.position, true)
 	# 按 1、2、3 切换颜色
 	#elif event is InputEventKey and event.pressed:
 		#match event.keycode:
@@ -74,7 +87,7 @@ func set_brush_radius(radius: int) -> void:
 func refresh() -> void:
 	hex_grid.refresh()
 
-func _handle_click(mouse_pos: Vector2) -> void:
+func _handle_click_or_drag(mouse_pos: Vector2, from_motion: bool = false) -> void:
 	var camera := get_viewport().get_camera_3d()
 	if not is_instance_valid(camera):
 		push_error("HexMapEditor: camera is null")
@@ -89,12 +102,21 @@ func _handle_click(mouse_pos: Vector2) -> void:
 		return
 
 	var coords := HexCoordinates.from_position(hit_position)
-	var center_cell : HexCell = hex_grid.get_cell(coords)
-	if not is_instance_valid(center_cell):
-		push_error("HexMapEditor: cell is not valid!")
+	var current_cell : HexCell = hex_grid.get_cell(coords)
+	if not is_instance_valid(current_cell):
+		#push_error("HexMapEditor: cell is not valid!")
+		_previous_cell = null
+		_is_drag = false
 		return
 	
-	_edit_cells(center_cell)
+	# 只有“按住左键并移动”时，才把“从上一格拖到当前格”当作拖拽并校验河流方向；单纯点击不触发河流
+	if from_motion and _previous_cell != null and _previous_cell != current_cell:
+		_validate_drag(current_cell)
+	else:
+		_is_drag = false
+		
+	_edit_cells(current_cell)
+	_previous_cell = current_cell
 
 func _edit_cells(center: HexCell) -> void:
 	if not is_instance_valid(center):
@@ -103,7 +125,7 @@ func _edit_cells(center: HexCell) -> void:
 
 	# 半径 0：只改中心格子
 	if brush_radius <= 0:
-		_edit_cell(center)
+		_edit_cell(center, center)
 		return
 
 	var center_coords := center.coordinates
@@ -119,13 +141,32 @@ func _edit_cells(center: HexCell) -> void:
 			var coords := HexCoordinates.new(nx, nz)
 			var cell := hex_grid.get_cell(coords)
 			if is_instance_valid(cell):
-				_edit_cell(cell)
+				_edit_cell(cell, center)
 
-func _edit_cell(cell: HexCell) -> void:
+func _edit_cell(cell: HexCell, drag_center: HexCell = null) -> void:
 	if not is_instance_valid(cell):
 		push_error("HexMapEditor: cell is null")
 		return
+
+	match river_mode:
+		RiverMode.IGNORE:
+			pass
+		RiverMode.REMOVE:
+			cell.remove_river()
+		RiverMode.ADD:
+			if _is_drag and _previous_cell != null and cell == drag_center:
+				_previous_cell.set_outgoing_river(_drag_direction)
+
 	if not disable_color:
 		cell.color = colors.values()[active_color]
 	if not disable_elevation:
 		cell.elevation = active_elevation
+
+func _validate_drag(current_cell: HexCell) -> void:
+	_is_drag = false
+	for d in HexCell.HexDirection.values():
+		var neighbor := _previous_cell.get_neighbor(d)
+		if neighbor == current_cell:
+			_is_drag = true
+			_drag_direction = d
+			return

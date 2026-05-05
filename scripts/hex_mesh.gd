@@ -36,13 +36,12 @@ func _triangulate_cell_part(cell: HexCell, direction: int) -> void:
 	var v1 := center + HexMetrics.get_first_solid_corner(direction)
 	var v2 := center + HexMetrics.get_second_solid_corner(direction)
 	
-	#var e1 := v1.lerp(v2, 1.0 / 3.0)
-	#var e2 := v1.lerp(v2, 2.0 / 3.0)
-
-	#_add_triangle([center, v1, e1], [cell.color, cell.color, cell.color])
-	#_add_triangle([center, e1, e2], [cell.color, cell.color, cell.color])
-	#_add_triangle([center, e2, v2], [cell.color, cell.color, cell.color])
-	var edge := _make_edge(v1, v2)
+	var edge := _make_edge(v1, v2, 0.2)
+	
+	# 有河时：只压低中间顶点，形成斜壁沟槽
+	if cell.has_river_through_edge(direction):
+		edge[2].y = cell.stream_bed_y
+	
 	_triangulate_fan(center, edge, cell.color)
 
 	#_add_quad([v1, v2, v3, v4], [cell.color, cell.color, bridge_color, bridge_color])
@@ -59,7 +58,13 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 	var v3 := edge[0] + bridge
 	var v4 := edge[-1] + bridge
 
-	var edge2 := _make_edge(v3, v4)
+	var edge2 := _make_edge(v3, v4, 0.2)
+	
+	# 有河时：只压低中间顶点，形成斜壁沟槽
+	if cell.has_river_through_edge(dir_index):
+		edge[2].y = cell.stream_bed_y
+		edge2[2].y = neighbor.stream_bed_y
+	
 	if cell.get_edge_type(dir_index as HexCell.HexDirection) == HexMetrics.HexEdgeType.SLOPE:
 		_triangulate_edge_terraces(edge, edge2, cell, neighbor)
 	else:
