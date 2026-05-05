@@ -3,14 +3,25 @@ class_name HexMapEditor
 
 @export var hex_grid: HexGrid
 # 可以在编辑器中编辑颜色
-@export var colors : PackedColorArray = [
-	Color.RED,
-	Color.GREEN,
-	Color.BLUE
-]
-var active_color: Color = colors[0] # 默认画笔红色
+@export var colors : Dictionary[StringName, Color] = {
+	"红色": Color.RED,
+	"绿色": Color.GREEN,
+	"蓝色": Color.BLUE
+}
+
+@export var active_color: int = 0 # 默认画笔红色
 ## 当前海拔等级
-var active_elevation: int = 0  
+@export var active_elevation: int = 0  
+@export var brush_radius: int = 0
+
+@export var disable_color : bool = false
+@export var disable_elevation : bool = false
+
+signal active_color_changed(color: Color)
+signal color_disable_changed()
+signal active_elevation_changed(elevation: int)
+signal elevation_disable_changed()
+signal brush_radius_changed(radius: int)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(hex_grid):
@@ -23,11 +34,42 @@ func _unhandled_input(event: InputEvent) -> void:
 	# 按 1、2、3 切换颜色
 	elif event is InputEventKey and event.pressed:
 		match event.keycode:
-			KEY_1: active_color = colors[0]
-			KEY_2: active_color = colors[1]
-			KEY_3: active_color = colors[2]
+			KEY_1: active_color = 0
+			KEY_2: active_color = 1
+			KEY_3: active_color = 2
 			KEY_Q: active_elevation -= 1
 			KEY_E: active_elevation += 1
+
+func set_active_color(color: int) -> void:
+	if active_color == color:
+		return
+	active_color = color
+	active_color_changed.emit(color)
+
+func set_disable_color(disable: bool) -> void:
+	if disable_color == disable:
+		return
+	disable_color = disable
+	color_disable_changed.emit()
+
+func set_active_elevation(elevation: int) -> void:
+	if active_elevation == elevation:
+		return
+	active_elevation = elevation
+	active_elevation_changed.emit(elevation)
+
+func set_disable_elevation(disable: bool) -> void:
+	if disable_elevation == disable:
+		return
+	disable_elevation = disable
+	elevation_disable_changed.emit()
+
+func set_brush_radius(radius: int) -> void:
+	radius = max(radius, 0)
+	if brush_radius == radius:
+		return
+	brush_radius = radius
+	brush_radius_changed.emit(radius)
 
 func _handle_click(mouse_pos: Vector2) -> void:
 	var camera := get_viewport().get_camera_3d()
@@ -37,10 +79,10 @@ func _handle_click(mouse_pos: Vector2) -> void:
 	var hit_position = plane.intersects_ray(ray_origin, ray_dir)
 	if hit_position != null:
 		var coords := HexCoordinates.from_position(hit_position)
-		var cell := hex_grid.get_cell(coords)
+		var cell : HexCell = hex_grid.get_cell(coords)
 		if is_instance_valid(cell):
 			# 染色
-			cell.color = active_color
+			cell.color = colors.values()[active_color]
 			cell.elevation = active_elevation
 			hex_grid.refresh()
 		else:

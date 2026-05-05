@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://r8bbikpwg6vq" path="res://prefabs/hex_grid.tscn" id="1_o5qli"]
 [ext_resource type="Script" uid="uid://dmgota36soris" path="res://scripts/hex_map_editor.gd" id="2_0wfyh"]
 [ext_resource type="PackedScene" uid="uid://bghxudgg2w8fb" path="res://prefabs/hex_map_camera.tscn" id="2_sugp2"]
+[ext_resource type="PackedScene" uid="uid://deiqomb6hdwx8" path="res://ui/hex_map_editor_panel.tscn" id="4_jyhfs"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -40,9 +41,13 @@ metadata/_custom_type_script = "uid://dmgota36soris"
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=207554144]
 layer = 128
 
-[node name="RefreshButton" type="Button" parent="UILayer" unique_id=701630130]
-offset_right = 8.0
-offset_bottom = 8.0
-text = "刷新"
-
-[connection signal="pressed" from="UILayer/RefreshButton" to="HexGrid" method="refresh"]
+[node name="HexMapEditorPanel" parent="UILayer" unique_id=2006241389 node_paths=PackedStringArray("editor") instance=ExtResource("4_jyhfs")]
+anchors_preset = 4
+anchor_left = 0.0
+anchor_right = 0.0
+offset_left = 0.0
+offset_top = -96.0
+offset_right = 192.0
+offset_bottom = 96.0
+grow_horizontal = 1
+editor = NodePath("../../HexMapEditor")

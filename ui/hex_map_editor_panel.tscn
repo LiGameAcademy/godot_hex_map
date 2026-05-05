@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://deiqomb6hdwx8"]
+
+[ext_resource type="Script" uid="uid://c04mts4e7ae14" path="res://ui/hex_map_editor_panel.gd" id="1_jiyck"]
+
+[node name="HexMapEditorPanel" type="MarginContainer" unique_id=2006241389]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.0
+offset_top = -21.0
+offset_right = 75.0
+offset_bottom = 21.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jiyck")
+
+[node name="Panel" type="Panel" parent="." unique_id=1369910585]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=496950384]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=597882916]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer" unique_id=829359286]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "地图编辑器"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=338285685]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer" unique_id=254633599]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer" unique_id=480170802]
+layout_mode = 2
+text = "颜色选择"
+
+[node name="OptionButtonColor" type="OptionButton" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer" unique_id=712971756]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 4
+popup/item_0/text = "忽略"
+popup/item_0/id = 0
+popup/item_1/text = "红色"
+popup/item_1/id = 1
+popup/item_2/text = "绿色"
+popup/item_2/id = 2
+popup/item_3/text = "蓝色"
+popup/item_3/id = 3
+
+[node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=903911345]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer2" unique_id=1192911318]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer2/HBoxContainer" unique_id=1019753613]
+layout_mode = 2
+text = "海拔高度"
+
+[node name="SpinBoxElevation" type="SpinBox" parent="MarginContainer/VBoxContainer/MarginContainer2/HBoxContainer" unique_id=1297357564]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -10.0
+max_value = 10.0
+
+[node name="CheckBoxElevation" type="CheckBox" parent="MarginContainer/VBoxContainer/MarginContainer2/HBoxContainer" unique_id=1540751624]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+
+[node name="MarginContainer3" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=1508988901]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer3" unique_id=1161094940]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer3/HBoxContainer" unique_id=800411669]
+layout_mode = 2
+text = "笔刷半径"
+
+[node name="SpinBoxBrushSize" type="SpinBox" parent="MarginContainer/VBoxContainer/MarginContainer3/HBoxContainer" unique_id=746700158]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 10.0
+
+[node name="RefreshButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1925217280]
+unique_name_in_owner = true
+layout_mode = 2
+text = "刷新"
