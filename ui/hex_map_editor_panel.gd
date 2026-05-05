@@ -14,6 +14,10 @@ func _ready() -> void:
 		return
 
 	# 1）初始化 UI 为逻辑层当前状态
+	option_button_color.clear()
+	option_button_color.add_item("忽略")
+	for color_name in editor.colors:
+		option_button_color.add_item(color_name)
 	if editor.disable_color:
 		option_button_color.selected = 0
 	else:
@@ -41,4 +45,8 @@ func _ready() -> void:
 	spin_box_brush_size.value_changed.connect(
 		func(value: float) -> void:
 			editor.set_brush_radius(int(value))
+	)
+	refresh_button.pressed.connect(
+		func() -> void:
+			editor.refresh()
 	)

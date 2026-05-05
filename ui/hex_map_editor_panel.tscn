@@ -2,6 +2,13 @@
 
 [ext_resource type="Script" uid="uid://c04mts4e7ae14" path="res://ui/hex_map_editor_panel.gd" id="1_jiyck"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jiyck"]
+bg_color = Color(0.3044623, 0.30446222, 0.30446216, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
 [node name="HexMapEditorPanel" type="MarginContainer" unique_id=2006241389]
 anchors_preset = 8
 anchor_left = 0.5
@@ -18,6 +25,7 @@ script = ExtResource("1_jiyck")
 
 [node name="Panel" type="Panel" parent="." unique_id=1369910585]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_jiyck")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=496950384]
 layout_mode = 2
@@ -31,6 +39,8 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer" unique_id=829359286]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 30
 text = "地图编辑器"
 horizontal_alignment = 1
@@ -44,6 +54,8 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer" unique_id=480170802]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
 text = "颜色选择"
 
 [node name="OptionButtonColor" type="OptionButton" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer" unique_id=712971756]
@@ -68,6 +80,8 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer2/HBoxContainer" unique_id=1019753613]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
 text = "海拔高度"
 
 [node name="SpinBoxElevation" type="SpinBox" parent="MarginContainer/VBoxContainer/MarginContainer2/HBoxContainer" unique_id=1297357564]
@@ -89,6 +103,8 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer3/HBoxContainer" unique_id=800411669]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
 text = "笔刷半径"
 
 [node name="SpinBoxBrushSize" type="SpinBox" parent="MarginContainer/VBoxContainer/MarginContainer3/HBoxContainer" unique_id=746700158]
@@ -100,4 +116,6 @@ max_value = 10.0
 [node name="RefreshButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1925217280]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
 text = "刷新"

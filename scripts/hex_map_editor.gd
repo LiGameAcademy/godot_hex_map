@@ -32,13 +32,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			_handle_click(event.position)
 
 	# 按 1、2、3 切换颜色
-	elif event is InputEventKey and event.pressed:
-		match event.keycode:
-			KEY_1: active_color = 0
-			KEY_2: active_color = 1
-			KEY_3: active_color = 2
-			KEY_Q: active_elevation -= 1
-			KEY_E: active_elevation += 1
+	#elif event is InputEventKey and event.pressed:
+		#match event.keycode:
+			#KEY_1: active_color = 0
+			#KEY_2: active_color = 1
+			#KEY_3: active_color = 2
+			#KEY_Q: active_elevation -= 1
+			#KEY_E: active_elevation += 1
 
 func set_active_color(color: int) -> void:
 	if active_color == color:
@@ -71,19 +71,61 @@ func set_brush_radius(radius: int) -> void:
 	brush_radius = radius
 	brush_radius_changed.emit(radius)
 
+func refresh() -> void:
+	hex_grid.refresh()
+
 func _handle_click(mouse_pos: Vector2) -> void:
 	var camera := get_viewport().get_camera_3d()
+	if not is_instance_valid(camera):
+		push_error("HexMapEditor: camera is null")
+		return
+
 	var ray_origin := camera.project_ray_origin(mouse_pos)
 	var ray_dir := camera.project_ray_normal(mouse_pos)
 	var plane := Plane(Vector3.UP, 0.0)
 	var hit_position = plane.intersects_ray(ray_origin, ray_dir)
-	if hit_position != null:
-		var coords := HexCoordinates.from_position(hit_position)
-		var cell : HexCell = hex_grid.get_cell(coords)
-		if is_instance_valid(cell):
-			# 染色
-			cell.color = colors.values()[active_color]
-			cell.elevation = active_elevation
-			hex_grid.refresh()
-		else:
-			push_error("HexMapEditor: cell is not valid!")
+	if hit_position == null:
+		push_error("HexMapEditor: hit_position is null")
+		return
+
+	var coords := HexCoordinates.from_position(hit_position)
+	var center_cell : HexCell = hex_grid.get_cell(coords)
+	if not is_instance_valid(center_cell):
+		push_error("HexMapEditor: cell is not valid!")
+		return
+	
+	_edit_cells(center_cell)
+
+func _edit_cells(center: HexCell) -> void:
+	if not is_instance_valid(center):
+		push_error("HexMapEditor: center is null")
+		return
+
+	# 半径 0：只改中心格子
+	if brush_radius <= 0:
+		_edit_cell(center)
+		return
+
+	var center_coords := center.coordinates
+	var r: int = brush_radius
+
+	# 使用立方体坐标的“六边形半径”算法
+	for dx in range(-r, r + 1):
+		var min_dz: int = max(-r, -dx - r)
+		var max_dz: int = min(r, -dx + r)
+		for dz in range(min_dz, max_dz + 1):
+			var nx := center_coords.x + dx
+			var nz := center_coords.z + dz
+			var coords := HexCoordinates.new(nx, nz)
+			var cell := hex_grid.get_cell(coords)
+			if is_instance_valid(cell):
+				_edit_cell(cell)
+
+func _edit_cell(cell: HexCell) -> void:
+	if not is_instance_valid(cell):
+		push_error("HexMapEditor: cell is null")
+		return
+	if not disable_color:
+		cell.color = colors.values()[active_color]
+	if not disable_elevation:
+		cell.elevation = active_elevation
