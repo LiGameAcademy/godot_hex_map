@@ -103,4 +103,5 @@ func _create_coordinates_label(cell: HexCell) -> Label3D:
 	label.position.y += 1
 	label.name = "cell_" + str(cell.coordinates)
 	label.set_meta("cell", cell)
+	label.hide()
 	return label

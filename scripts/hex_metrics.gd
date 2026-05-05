@@ -7,9 +7,14 @@ enum HexEdgeType {
 	CLIFF, 	## 悬崖
 }
 
+## 从外半径到内半径的转换因子
+const OUTER_TO_INNER: float = 0.866025404
+## 从内半径到外半径的转换因子
+const INNER_TO_OUTER: float = 1.0 / OUTER_TO_INNER
+## 定义外半径为 10 个单位
 const OUTER_RADIUS := 10.0
 # 根号3除以2 约等于 0.866025404
-const INNER_RADIUS := OUTER_RADIUS * 0.866025404
+const INNER_RADIUS := OUTER_RADIUS * OUTER_TO_INNER
 
 const CORNERS: Array[Vector3] = [
 	Vector3(0.0, 0.0, -OUTER_RADIUS),					## 上
@@ -60,6 +65,9 @@ static func get_first_solid_corner(index: int) -> Vector3:
 
 static func get_second_solid_corner(index: int) -> Vector3:
 	return CORNERS[index + 1] * SOLID_FACTOR
+
+static func get_solid_edge_middle(index: int) -> Vector3:
+	return (CORNERS[index] + CORNERS[index + 1]) * SOLID_FACTOR * 0.5
 
 ## 获取“从内角点走到边界中点”的偏移向量，用于构建边界桥梁
 static func get_bridge(index: int) -> Vector3:

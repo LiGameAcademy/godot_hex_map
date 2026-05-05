@@ -28,25 +28,93 @@ func triangulate(cells: Array[HexCell]) -> void:
 
 ## 三角化单个六边形网格
 func _triangulate_cell(cell: HexCell) -> void:
-	for i in range(6):
-		_triangulate_cell_part(cell, i)
-
-func _triangulate_cell_part(cell: HexCell, direction: int) -> void:
 	var center := cell.position
-	var v1 := center + HexMetrics.get_first_solid_corner(direction)
-	var v2 := center + HexMetrics.get_second_solid_corner(direction)
-	
-	var edge := _make_edge(v1, v2, 0.2)
-	
-	# 有河时：只压低中间顶点，形成斜壁沟槽
-	if cell.has_river_through_edge(direction):
-		edge[2].y = cell.stream_bed_y
-	
-	_triangulate_fan(center, edge, cell.color)
+	for i in range(6):
+		var direction = i as HexCell.HexDirection
+		var corner1 := center + HexMetrics.get_first_solid_corner(direction)
+		var corner2 := center + HexMetrics.get_second_solid_corner(direction)
+		var edge := _make_edge(corner1, corner2)
+		
+		if cell.has_river():
+			if cell.has_river_through_edge(direction):
+				edge[2].y = cell.stream_bed_y
+				if cell.has_river_begin_or_end():
+					_triangulate_river_begin_or_end(cell, direction, center, edge)
+				else:
+					_triangulate_with_river(cell, direction, center, edge)
+			else:
+				_triangulate_adjacent_to_river(cell, direction, center, edge)
+		else:
+			_triangulate_without_river(cell, direction, center, edge)
 
-	#_add_quad([v1, v2, v3, v4], [cell.color, cell.color, bridge_color, bridge_color])
-	if direction <= HexCell.HexDirection.SE:
-		_triangulate_connection(cell, direction as HexCell.HexDirection, edge)
+		if direction <= HexCell.HexDirection.SE:
+			_triangulate_connection(cell, direction, edge)
+
+func _triangulate_with_river(cell: HexCell, direction: int, center: Vector3, edge: PackedVector3Array) -> void:
+	var opposite_direction := cell.opposite_direction(direction)
+	var next_direction := cell.next_direction(direction)
+	var previous_direction := cell.previous_direction(direction)
+
+	var center_left : Vector3; var center_right : Vector3
+
+	if cell.has_river_through_edge(opposite_direction):
+		# 直河
+		center_left = center + HexMetrics.get_first_solid_corner(cell.previous_direction(direction)) * 0.25
+		center_right = center + HexMetrics.get_second_solid_corner(cell.next_direction(direction)) * 0.25
+	elif cell.has_river_through_edge(next_direction):
+		center_left = center
+		center_right = center.lerp(edge[4], 2.0 / 3.0)
+	elif cell.has_river_through_edge(previous_direction):
+		center_left = center.lerp(edge[0], 2.0 / 3.0)
+		center_right = center
+	elif cell.has_river_through_edge(cell.next2_direction(direction)):
+		# 钝角
+		center_left = center
+		center_right = center + HexMetrics.get_solid_edge_middle(next_direction) * (HexMetrics.INNER_TO_OUTER * 0.5)
+	elif cell.has_river_through_edge(cell.previous2_direction(direction)):
+		# 钝角
+		center_left = center + HexMetrics.get_solid_edge_middle(previous_direction) * (HexMetrics.INNER_TO_OUTER * 0.5)
+		center_right = center
+	else:
+		center_left = center
+		center_right = center
+	center = center_left.lerp(center_right, 0.5)
+
+	var m1 : Vector3 = center_left.lerp(edge[0], 0.5)
+	var m2 : Vector3 = center_right.lerp(edge[-1], 0.5)
+	var ms : PackedVector3Array = _make_edge(m1, m2, 1.0 / 6.0)
+	center.y = cell.stream_bed_y
+	ms[2].y = cell.stream_bed_y
+
+	_triangulate_strip(ms, edge, cell.color, cell.color)
+
+	_add_triangle([center_left, ms[0], ms[1]], [cell.color, cell.color, cell.color])
+	_add_triangle([center_right, ms[3], ms[4]], [cell.color, cell.color, cell.color])
+	_add_quad([center_left, center, ms[1], ms[2]], [cell.color, cell.color, cell.color, cell.color])
+	_add_quad([center, center_right, ms[2], ms[3]], [cell.color, cell.color, cell.color, cell.color])
+
+func _triangulate_river_begin_or_end(cell: HexCell, _direction: int, center: Vector3, edge: PackedVector3Array) -> void:
+	var ms := _make_edge(center.lerp(edge[0], 0.5), center.lerp(edge[-1], 0.5))
+	ms[2].y = edge[2].y
+	_triangulate_strip(ms, edge, cell.color, cell.color)
+	_triangulate_fan(center, ms, cell.color)
+
+func _triangulate_adjacent_to_river(cell: HexCell, direction: HexCell.HexDirection, center: Vector3, edge: Array[Vector3]) -> void:
+	var next_direction := cell.next_direction(direction)
+	var previous_direction := cell.previous_direction(direction)
+	if cell.has_river_through_edge(next_direction):
+		if cell.has_river_through_edge(previous_direction):
+			center += HexMetrics.get_solid_edge_middle(direction) * (0.5 * HexMetrics.INNER_TO_OUTER)
+		elif cell.has_river_through_edge(cell.previous2_direction(direction)):
+			center += HexMetrics.get_first_solid_corner(direction) * 0.25
+	elif cell.has_river_through_edge(previous_direction) and cell.has_river_through_edge(cell.next2_direction(direction)):
+			center += HexMetrics.get_second_solid_corner(direction) * 0.25
+	var ms := _make_edge(center.lerp(edge[0], 0.5), center.lerp(edge[-1], 0.5))
+	_triangulate_strip(ms, edge, cell.color, cell.color)
+	_triangulate_fan(center, ms, cell.color)
+
+func _triangulate_without_river(cell: HexCell, _direction: int, center: Vector3, edge: PackedVector3Array) -> void:
+	_triangulate_fan(center, edge, cell.color)
 
 func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edge: PackedVector3Array) -> void:
 	var neighbor := cell.get_neighbor(dir_index as HexCell.HexDirection)
@@ -58,7 +126,7 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 	var v3 := edge[0] + bridge
 	var v4 := edge[-1] + bridge
 
-	var edge2 := _make_edge(v3, v4, 0.2)
+	var edge2 := _make_edge(v3, v4)
 	
 	# 有河时：只压低中间顶点，形成斜壁沟槽
 	if cell.has_river_through_edge(dir_index):
@@ -201,10 +269,13 @@ func _triangulate_strip(from: PackedVector3Array, to: PackedVector3Array, c1: Co
 		_add_quad([from[i], from[i + 1], to[i], to[i + 1]], colors)
 
 func _make_edge(a: Vector3, b: Vector3, outer_step: float = 0.25) -> PackedVector3Array:
-	var vs : PackedVector3Array
-	var count := 1 / outer_step
-	for i in range(count):
-		vs.append(a.lerp(b, i / (count - 1)))
+	var vs : PackedVector3Array = [
+		a,
+		a.lerp(b, outer_step),
+		a.lerp(b, 0.5),
+		a.lerp(b, (1 - outer_step)),
+		b
+	]
 	return vs
 
 func _terrace_lerp_edge(a: PackedVector3Array, b: PackedVector3Array, step: int) -> PackedVector3Array:

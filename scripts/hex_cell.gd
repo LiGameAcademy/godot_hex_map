@@ -66,13 +66,19 @@ func set_neighbor(direction: HexDirection, cell: HexCell) -> void:
 func opposite_direction(direction: HexDirection) -> HexDirection:
 	return (direction + 3) % 6 as HexDirection
 
-## 下一个方向
-func next_direction(direction: HexDirection) -> HexDirection:
-	return (direction + 1) % 6 as HexDirection
-
 ## 上一个方向
 func previous_direction(direction: HexDirection) -> HexDirection:
-	return (direction - 1) % 6 as HexDirection
+	return posmod(int(direction) - 1, 6) as HexDirection
+
+## 下一个方向
+func next_direction(direction: HexDirection) -> HexDirection:
+	return posmod(int(direction) + 1, 6) as HexDirection
+
+func previous2_direction(direction: HexDirection) -> HexDirection:
+	return posmod(int(direction) + 4, 6) as HexDirection
+
+func next2_direction(direction: HexDirection) -> HexDirection:
+	return posmod(int(direction) + 2, 6) as HexDirection
 
 func get_edge_type(direction: HexDirection) -> HexMetrics.HexEdgeType:
 	var neighbor = get_neighbor(direction)

@@ -129,6 +129,7 @@ text = "河流模式"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+selected = 0
 item_count = 3
 popup/item_0/text = "忽略"
 popup/item_0/id = 0
