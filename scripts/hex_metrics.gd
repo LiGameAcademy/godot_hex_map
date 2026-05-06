@@ -49,6 +49,7 @@ const CHUNK_SIZE_Z := 5
 
 ## 河床相对格子海拔的高度偏移（负值表示比地面低）
 const STREAM_BED_ELEVATION_OFFSET: float = -1.0
+const RIVER_SURFACE_Y_OFFSET: float = -0.5
 
 static var noise: FastNoiseLite
 
@@ -113,3 +114,11 @@ static func sample_noise(position: Vector3) -> Vector3:
 	var ny := noise.get_noise_3d(x + 100.0, y + 200.0, z + 300.0)
 	var nz := noise.get_noise_3d(x - 100.0, y - 200.0, z - 300.0)
 	return Vector3(nx, ny, nz)
+
+## 使用噪声对顶点进行扰动
+static func perturb(p: Vector3) -> Vector3:
+	var noise_value := sample_noise(p)
+	var q := p
+	q.x += noise_value.x * HexMetrics.CELL_PERTURB_STRENGTH
+	q.z += noise_value.z * HexMetrics.CELL_PERTURB_STRENGTH
+	return q

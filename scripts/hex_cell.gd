@@ -40,6 +40,9 @@ var outgoing_river: HexDirection
 var stream_bed_y: float:
 	get:
 		return (elevation + HexMetrics.STREAM_BED_ELEVATION_OFFSET) * HexMetrics.ELEVATION_STEP
+var river_surface_y : float:
+	get:
+		return float(elevation + HexMetrics.RIVER_SURFACE_Y_OFFSET) * HexMetrics.ELEVATION_STEP
 
 var chunk : HexGridChunk
 
