@@ -49,7 +49,7 @@ const CHUNK_SIZE_Z := 5
 
 ## 河床相对格子海拔的高度偏移（负值表示比地面低）
 const STREAM_BED_ELEVATION_OFFSET: float = -1.0
-const RIVER_SURFACE_Y_OFFSET: float = -0.5
+const RIVER_SURFACE_Y_OFFSET: float = -0.1
 
 static var noise: FastNoiseLite
 

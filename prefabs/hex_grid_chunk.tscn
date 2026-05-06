@@ -12,5 +12,6 @@ unique_name_in_owner = true
 
 [node name="RiverMesh" parent="." unique_id=1661439844 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
+cast_shadow = 0
 show_wireframe = false
 persistent_material = ExtResource("3_n4gxk")
