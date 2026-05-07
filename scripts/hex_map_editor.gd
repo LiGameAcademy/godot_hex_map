@@ -2,6 +2,11 @@ extends Node
 class_name HexMapEditor
 
 enum RiverMode { IGNORE, ADD, REMOVE }
+enum RoadMode { 
+	IGNORE,		## 忽略
+	ADD, 		## 添加
+	REMOVE,		## 移除
+}
 
 @export var hex_grid: HexGrid
 # 可以在编辑器中编辑颜色
@@ -18,6 +23,7 @@ enum RiverMode { IGNORE, ADD, REMOVE }
 @export var disable_elevation : bool = false
 @export var brush_radius: int = 0
 @export var river_mode: RiverMode = RiverMode.IGNORE
+@export var road_mode: RoadMode = RoadMode.IGNORE
 
 var _previous_cell: HexCell = null
 var _is_drag: bool = false
@@ -28,6 +34,8 @@ signal color_disable_changed()
 signal active_elevation_changed(elevation: int)
 signal elevation_disable_changed()
 signal brush_radius_changed(radius: int)
+signal river_mode_changed(mode: RiverMode)
+signal road_mode_changed(mode: RoadMode)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(hex_grid):
@@ -83,6 +91,26 @@ func set_brush_radius(radius: int) -> void:
 		return
 	brush_radius = radius
 	brush_radius_changed.emit(radius)
+
+func set_river_mode(mode: int) -> void:
+	var m := mode as RiverMode
+	if m != RiverMode.IGNORE and road_mode != RoadMode.IGNORE:
+		road_mode = RoadMode.IGNORE
+		road_mode_changed.emit(road_mode)
+	if river_mode == m:
+		return
+	river_mode = m
+	river_mode_changed.emit(river_mode)
+
+func set_road_mode(mode: int) -> void:
+	var m := mode as RoadMode
+	if m != RoadMode.IGNORE and river_mode != RiverMode.IGNORE:
+		river_mode = RiverMode.IGNORE
+		river_mode_changed.emit(river_mode)
+	if road_mode == m:
+		return
+	road_mode = m
+	road_mode_changed.emit(road_mode)
 
 func refresh() -> void:
 	hex_grid.refresh()
@@ -156,6 +184,14 @@ func _edit_cell(cell: HexCell, drag_center: HexCell = null) -> void:
 		RiverMode.ADD:
 			if _is_drag and _previous_cell != null and cell == drag_center:
 				_previous_cell.set_outgoing_river(_drag_direction)
+
+	if road_mode == RoadMode.REMOVE:
+		cell.remove_roads()
+	elif road_mode == RoadMode.ADD:
+		if _is_drag and _previous_cell != null and cell == drag_center:
+			var other_cell := cell.get_neighbor(cell.opposite_direction(_drag_direction))
+			if other_cell != null:
+				other_cell.add_road(_drag_direction)
 
 	if not disable_color:
 		cell.color = colors.values()[active_color]

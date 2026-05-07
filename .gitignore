@@ -2,3 +2,5 @@
 .godot/
 /android/
 /.vscode
+/git-export-archives/*.zip
+/docs/*.bkp

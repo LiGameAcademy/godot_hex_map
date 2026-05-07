@@ -7,6 +7,7 @@ var _cells: Array[HexCell] = []
 
 @onready var _terrain_mesh: HexMesh = %TerrainMesh
 @onready var _river_mesh: HexMesh = %RiverMesh
+@onready var _road_mesh: HexMesh = %RoadMesh
 
 func _ready() -> void:
 	var size := HexMetrics.CHUNK_SIZE_X * HexMetrics.CHUNK_SIZE_Z
@@ -24,7 +25,9 @@ func _process(_delta: float) -> void:
 		_terrain_mesh.begin_triangles()
 	if is_instance_valid(_river_mesh):
 		_river_mesh.begin_triangles()
-
+	if is_instance_valid(_road_mesh):
+		_road_mesh.begin_triangles()
+		
 	for cell in _cells:
 		if is_instance_valid(cell):
 			_triangulate_cell(cell)
@@ -33,6 +36,8 @@ func _process(_delta: float) -> void:
 		_terrain_mesh.commit_triangles()
 	if is_instance_valid(_river_mesh):
 		_river_mesh.commit_triangles()
+	if is_instance_valid(_road_mesh):
+		_road_mesh.commit_triangles()
 
 	set_process(false)
 
@@ -69,8 +74,15 @@ func _triangulate_cell(cell: HexCell) -> void:
 		if direction <= HexCell.HexDirection.SE:
 			_triangulate_connection(cell, direction, edge)
 
-func _triangulate_without_river(cell: HexCell, _direction: int, center: Vector3, edge: PackedVector3Array) -> void:
+func _triangulate_without_river(cell: HexCell, direction: int, center: Vector3, edge: PackedVector3Array) -> void:
 	_triangulate_fan(center, edge, cell.color)
+
+	if cell.has_roads():
+		var interpolators := _get_road_interpolators(direction as HexCell.HexDirection, cell)
+		var middle_left := center.lerp(edge[0], interpolators.x)
+		var middle_right := center.lerp(edge[4], interpolators.y)
+		var has_road_through_edge = cell.has_road_through_edge(direction as HexCell.HexDirection)
+		_triangulate_road(center, middle_left, middle_right, edge, has_road_through_edge)
 
 #region 地形相关
 func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edge: PackedVector3Array) -> void:
@@ -92,11 +104,12 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 		# 河流网格
 		var reversed: bool = cell.has_incoming_river and cell.incoming_river == (dir_index as HexCell.HexDirection)
 		_triangulate_river_quad([edge[1], edge[3], edge2[1], edge2[3]], cell.river_surface_y, neighbor.river_surface_y, 0.8, reversed)
-	
+
+	var has_road := cell.has_road_through_edge(dir_index as HexCell.HexDirection)
 	if cell.get_edge_type(dir_index as HexCell.HexDirection) == HexMetrics.HexEdgeType.SLOPE:
-		_triangulate_edge_terraces(edge, edge2, cell, neighbor)
+		_triangulate_edge_terraces(edge, edge2, cell, neighbor, has_road)
 	else:
-		_triangulate_strip(edge, edge2, cell.color, neighbor.color)
+		_triangulate_strip(edge, edge2, cell.color, neighbor.color, has_road)
 	
 	var next_dir := cell.next_direction(dir_index)
 	var next_neighbor = cell.get_neighbor(next_dir)
@@ -114,21 +127,21 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 		else:
 			_triangulate_corner(v5, edge[-1], v4, next_neighbor, cell, neighbor)
 
-func _triangulate_edge_terraces(edge: PackedVector3Array, edge2: PackedVector3Array, begin_cell: HexCell, end_cell: HexCell) -> void:
+func _triangulate_edge_terraces(edge: PackedVector3Array, edge2: PackedVector3Array, begin_cell: HexCell, end_cell: HexCell, has_road: bool) -> void:
 	var begin_color := begin_cell.color
 	var end_color := end_cell.color
 
 	var e2 := _terrace_lerp_edge(edge, edge2, 1)
 	var c2 := HexMetrics.terrace_lerp_color(begin_color, end_color, 1)
 
-	_triangulate_strip(edge, e2, begin_cell.color, c2)
+	_triangulate_strip(edge, e2, begin_cell.color, c2, has_road)
 	for i in range(2, HexMetrics.TERRACE_STEPS):
 		var e1 := e2
 		var c1 = c2
 		e2 = _terrace_lerp_edge(edge, edge2, i)
 		c2 = HexMetrics.terrace_lerp_color(begin_color, end_color, i)
-		_triangulate_strip(e1, e2, c1, c2)
-	_triangulate_strip(e2, edge2, c2, end_color)
+		_triangulate_strip(e1, e2, c1, c2, has_road)
+	_triangulate_strip(e2, edge2, c2, end_color, has_road)
 
 func _triangulate_corner(
 		bottom_v: Vector3, left_v: Vector3, right_v: Vector3, 
@@ -221,7 +234,6 @@ func _triangulate_boundary_triangle(
 #endregion
 
 #region 河流相关
-
 func _triangulate_with_river(cell: HexCell, direction: int, center: Vector3, edge: PackedVector3Array) -> void:
 	var opposite_direction := cell.opposite_direction(direction)
 	var next_direction := cell.next_direction(direction)
@@ -311,15 +323,48 @@ func _triangulate_river_quad(vertices: PackedVector3Array, y1: float, y2: float,
 	_river_mesh.add_quad_uv_rect(vs, uv_rect)
 #endregion
 
+#region 道路相关
+func _triangulate_road(center: Vector3, middle_left: Vector3, middle_right: Vector3, edge: PackedVector3Array, has_road_through_edge: bool) -> void:
+	if has_road_through_edge:
+		var middle_center = middle_left.lerp(middle_right, 0.5)
+		_triangulate_road_quad([middle_left, middle_center, middle_right, edge[1], edge[2], edge[3]])
+		# 补齐剩余两个三角形
+		_road_mesh.add_triangle_uv([center, middle_left, middle_center], [Vector2(1.0, 0.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)])
+		_road_mesh.add_triangle_uv([center, middle_center, middle_right], [Vector2(1.0, 0.0), Vector2(1.0, 0.0), Vector2(0.0, 0.0)])
+	else:
+		_triangulate_road_edge(center, middle_left, middle_right)
+
+func _triangulate_road_edge(center: Vector3, middle_left: Vector3, middle_right: Vector3) -> void:
+	_road_mesh.add_triangle_uv([center, middle_left, middle_right], [Vector2(1.0, 0.0), Vector2(0.0, 0.0), Vector2(0.0, 0.0)])
+
+func _triangulate_road_quad(vertices: PackedVector3Array) -> void:
+	#var colors : PackedColorArray = [Color.RED, Color.RED, Color.RED, Color.RED]
+	_road_mesh.add_quad_uv_rect([vertices[0], vertices[1], vertices[3], vertices[4]], [0.0, 1.0, 0.0, 0.0])
+	_road_mesh.add_quad_uv_rect([vertices[1], vertices[2], vertices[4], vertices[5]], [1.0, 0.0, 0.0, 0.0])
+
+func _get_road_interpolators(direction: HexCell.HexDirection, cell: HexCell) -> Vector2:
+	var interpolators: Vector2 = Vector2(0.0, 0.0)
+	if cell.has_road_through_edge(direction):
+		interpolators.x = 0.5
+		interpolators.y = 0.5
+	else:
+		interpolators.x = 0.5 if cell.has_road_through_edge(cell.previous_direction(direction)) else 0.25
+		interpolators.y = 0.5 if cell.has_road_through_edge(cell.next_direction(direction)) else 0.25
+	return interpolators
+
+#endregion
+
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
 	var colors := [color, color, color]
 	for i in range(edge.size() - 1):
 		_terrain_mesh.add_triangle([center, edge[i], edge[i + 1]], colors)
 
-func _triangulate_strip(from: PackedVector3Array, to: PackedVector3Array, c1: Color, c2: Color) -> void:
+func _triangulate_strip(from: PackedVector3Array, to: PackedVector3Array, c1: Color, c2: Color, has_road: bool = true) -> void:
 	var colors := [c1, c1, c2, c2]
 	for i in range(from.size() - 1):
 		_terrain_mesh.add_quad([from[i], from[i + 1], to[i], to[i + 1]], colors)
+	if has_road:
+		_triangulate_road_quad([from[1], from[2], from[3], to[1], to[2], to[3]])
 
 func _make_edge(a: Vector3, b: Vector3, outer_step: float = 0.25) -> PackedVector3Array:
 	var vs : PackedVector3Array = [

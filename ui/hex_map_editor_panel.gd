@@ -5,10 +5,13 @@ extends MarginContainer
 @onready var check_box_elevation: CheckBox = %CheckBoxElevation
 @onready var spin_box_brush_size: SpinBox = %SpinBoxBrushSize
 @onready var option_button_river: OptionButton = %OptionButtonRiver
+@onready var option_button_road: OptionButton = %OptionButtonRoad
 @onready var refresh_button: Button = %RefreshButton
 
 ## 表现层：负责 UI 展示与交互输入，依赖 HexMapEditor 逻辑层的 API / signal
 @export var editor: HexMapEditor
+
+var _syncing_mode_ui: bool = false
 
 func _ready() -> void:
 	if editor == null:
@@ -26,6 +29,15 @@ func _ready() -> void:
 	spin_box_elevation.value = editor.active_elevation
 	check_box_elevation.button_pressed = not editor.disable_elevation
 	spin_box_brush_size.value = editor.brush_radius
+	
+	_syncing_mode_ui = true
+	option_button_river.select(int(editor.river_mode))
+	option_button_road.select(int(editor.road_mode))
+	_syncing_mode_ui = false
+
+	editor.river_mode_changed.connect(_on_editor_river_mode_changed)
+	editor.road_mode_changed.connect(_on_editor_road_mode_changed)
+
 	
 	option_button_color.item_selected.connect(
 		func(index : int) -> void:
@@ -49,9 +61,33 @@ func _ready() -> void:
 	)
 	option_button_river.item_selected.connect(
 		func(index : int) -> void:
-			editor.river_mode = index as HexMapEditor.RiverMode
+			if _syncing_mode_ui or not is_instance_valid(editor):
+				return
+			#editor.river_mode = index as HexMapEditor.RiverMode
+			editor.set_river_mode(index as HexMapEditor.RiverMode)
+	)
+	option_button_road.item_selected.connect(
+		func(index : int) -> void:
+			if _syncing_mode_ui or not is_instance_valid(editor):
+				return
+			#editor.road_mode = index as HexMapEditor.RoadMode
+			editor.set_road_mode(index as HexMapEditor.RoadMode)
 	)
 	refresh_button.pressed.connect(
 		func() -> void:
 			editor.refresh()
 	)
+
+func _on_editor_river_mode_changed(_mode: HexMapEditor.RiverMode) -> void:
+	if not is_instance_valid(editor):
+		return
+	_syncing_mode_ui = true
+	option_button_river.select(int(editor.river_mode))
+	_syncing_mode_ui = false
+
+func _on_editor_road_mode_changed(_mode: HexMapEditor.RoadMode) -> void:
+	if not is_instance_valid(editor):
+		return
+	_syncing_mode_ui = true
+	option_button_road.select(int(editor.road_mode))
+	_syncing_mode_ui = false

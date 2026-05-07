@@ -7,8 +7,6 @@ class_name HexGrid
 @export var chunk_count_z := 3
 @export var noise: FastNoiseLite
 
-@onready var hex_mesh: MeshInstance3D = $HexMesh
-
 var cells: Array[HexCell] = []
 var chunks: Array[HexGridChunk] = []
 

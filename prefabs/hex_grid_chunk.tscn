@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bypyoa4k0yygk" path="res://prefabs/hex_grid_chunk.gd" id="1_p6i6p"]
 [ext_resource type="PackedScene" uid="uid://do5bqbp47h8a3" path="res://prefabs/hex_mesh.tscn" id="2_p6i6p"]
 [ext_resource type="Material" uid="uid://bljr1cwyku2tx" path="res://resources/materials/river_shader_material.tres" id="3_n4gxk"]
+[ext_resource type="Material" uid="uid://ptaxwsghis3u" path="res://resources/materials/road_shader_material.tres" id="4_qw6ox"]
 
 [node name="HexGridChunk" type="Node3D" unique_id=258472898]
 script = ExtResource("1_p6i6p")
@@ -15,3 +16,7 @@ unique_name_in_owner = true
 cast_shadow = 0
 show_wireframe = false
 persistent_material = ExtResource("3_n4gxk")
+
+[node name="RoadMesh" parent="." unique_id=1977745933 instance=ExtResource("2_p6i6p")]
+unique_name_in_owner = true
+persistent_material = ExtResource("4_qw6ox")

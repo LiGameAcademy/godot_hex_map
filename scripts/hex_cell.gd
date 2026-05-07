@@ -27,6 +27,9 @@ var elevation : int = 0:
 		position.y = base_y
 		_validate_river_constraints()
 		_refresh()
+		for i in roads.size():
+			if roads[i] == 1 and get_elevation_difference(i as HexDirection) > 1:
+				_set_road(i, false)
 
 ## 河流状态：是否有河流流入 / 流出当前格子
 var has_incoming_river: bool = false
@@ -43,6 +46,9 @@ var stream_bed_y: float:
 var river_surface_y : float:
 	get:
 		return float(elevation + HexMetrics.RIVER_SURFACE_Y_OFFSET) * HexMetrics.ELEVATION_STEP
+
+## 每个方向是否有路，索引与 HexDirection 对应
+var roads: PackedByteArray = PackedByteArray([0, 0, 0, 0, 0, 0])
 
 var chunk : HexGridChunk
 
@@ -94,6 +100,14 @@ func get_edge_type_by_cell(other_cell: HexCell) -> HexMetrics.HexEdgeType:
 		return HexMetrics.HexEdgeType.FLAT
 	return HexMetrics.get_edge_type(elevation, other_cell.elevation)
 
+## 获取海拔差
+func get_elevation_difference(direction: HexDirection) -> int:
+	var neighbor := get_neighbor(direction)
+	if neighbor == null:
+		# 地图边界视为不可铺路
+		return 999
+	return absi(elevation - neighbor.elevation)
+
 #endregion
 
 #region 河流相关
@@ -121,6 +135,8 @@ func set_outgoing_river(direction: HexDirection) -> void:
 	neighbor.has_incoming_river = true
 	neighbor.incoming_river = opposite_direction(direction)
 	neighbor.refresh()
+
+	_set_road(int(direction), false)
 
 ## 移除出河
 func remove_outgoing_river() -> void:
@@ -171,6 +187,44 @@ func has_river_begin_or_end() -> bool:
 func has_river_through_edge(direction: HexDirection) -> bool:
 	return (has_incoming_river and incoming_river == direction) \
 		or (has_outgoing_river and outgoing_river == direction)
+#endregion
+
+#region 道路相关
+func has_road_through_edge(direction: HexDirection) -> bool:
+	return roads[int(direction)] == 1
+
+func has_roads() -> bool:
+	for i in roads.size():
+		if roads[i] == 1:
+			return true
+	return false
+	
+func add_road(direction: HexDirection) -> void:
+	var idx := int(direction)
+	if roads[idx] == 1:
+		return
+	if has_river_through_edge(direction):
+		return
+	if get_elevation_difference(direction) > 1:
+		return
+	_set_road(idx, true)
+
+func remove_roads() -> void:
+	for i in roads.size():
+		if roads[i] == 1:
+			_set_road(i, false)
+
+func _set_road(index: int, state: bool) -> void:
+	var flag := 1 if state else 0
+	roads[index] = flag
+
+	var dir := index as HexDirection
+	var neighbor := get_neighbor(dir)
+	if neighbor != null:
+		neighbor.roads[int(opposite_direction(dir))] = flag
+		neighbor.refresh()
+	refresh()
+
 #endregion
 
 func refresh() -> void:
