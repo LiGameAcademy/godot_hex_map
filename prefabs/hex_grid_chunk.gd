@@ -300,6 +300,9 @@ func _triangulate_river_begin_or_end(cell: HexCell, _direction: int, center: Vec
 	_river_mesh.add_triangle_uv([river_center, river_left, river_right], uvs)
 
 func _triangulate_adjacent_to_river(cell: HexCell, direction: HexCell.HexDirection, center: Vector3, edge: Array[Vector3]) -> void:
+	if cell.has_roads():
+		_triangulate_road_adjacent_to_river(cell, direction, center, edge)
+		
 	var next_direction := cell.next_direction(direction)
 	var previous_direction := cell.previous_direction(direction)
 	if cell.has_river_through_edge(next_direction):
@@ -352,6 +355,66 @@ func _get_road_interpolators(direction: HexCell.HexDirection, cell: HexCell) -> 
 		interpolators.y = 0.5 if cell.has_road_through_edge(cell.next_direction(direction)) else 0.25
 	return interpolators
 
+func _triangulate_road_adjacent_to_river(cell: HexCell, direction: HexCell.HexDirection, center: Vector3, edge: PackedVector3Array) -> void:
+	var has_road_through_edge = cell.has_road_through_edge(direction as HexCell.HexDirection)
+	var interpolators = _get_road_interpolators(direction as HexCell.HexDirection, cell)
+	var road_center := center
+
+	var previous_has_river := cell.has_river_through_edge(cell.previous_direction(direction as HexCell.HexDirection))
+	var next_has_river := cell.has_river_through_edge(cell.next_direction(direction as HexCell.HexDirection))
+
+	if cell.has_river_begin_or_end():
+		var opposite_direction = cell.opposite_direction(cell.river_enter_or_exit_direction)
+		road_center += HexMetrics.get_solid_edge_middle(opposite_direction) * (1.0 / 3.0)
+	elif cell.incoming_river == cell.opposite_direction(cell.outgoing_river):
+		# 直河
+		var corner: Vector3 = Vector3.ZERO
+		if previous_has_river:
+			if not has_road_through_edge and not cell.has_road_through_edge(cell.next_direction(direction as HexCell.HexDirection)):
+				return
+			corner = HexMetrics.get_second_solid_corner(direction as HexCell.HexDirection)
+		else:
+			if not has_road_through_edge and not cell.has_road_through_edge(cell.previous_direction(direction as HexCell.HexDirection)):
+				return
+			corner = HexMetrics.get_first_solid_corner(direction as HexCell.HexDirection)
+		road_center += corner * 0.5
+		center += corner * 0.25
+	# 锐角弯河道
+	elif cell.incoming_river == cell.previous_direction(cell.outgoing_river):
+		road_center -= HexMetrics.get_second_corner(cell.incoming_river) * 0.2
+	elif cell.incoming_river == cell.next_direction(cell.outgoing_river):
+		road_center -= HexMetrics.get_first_corner(cell.incoming_river) * 0.2
+	elif previous_has_river and next_has_river:
+		# 钝角弯内侧
+		if not has_road_through_edge:
+			# 移除孤立的道路路段
+			return
+		var offset := HexMetrics.get_solid_edge_middle(direction) * HexMetrics.INNER_TO_OUTER
+		road_center += offset * 0.7
+		center += offset * 0.5
+	else:
+		# 钝角弯外侧
+		var middle_direction : HexCell.HexDirection = direction as HexCell.HexDirection
+		if previous_has_river:
+			middle_direction = cell.next_direction(direction as HexCell.HexDirection)
+		elif next_has_river:
+			middle_direction = cell.previous_direction(direction as HexCell.HexDirection)
+		var middle_previous_direction := cell.previous_direction(middle_direction)
+		var middle_next_direction := cell.next_direction(middle_direction)
+		if not cell.has_road_through_edge(middle_direction) and not cell.has_road_through_edge(middle_previous_direction) and not cell.has_road_through_edge(middle_next_direction):
+			return
+		road_center += HexMetrics.get_solid_edge_middle(middle_direction) * 0.25
+		center += HexMetrics.get_solid_edge_middle(middle_direction) * 0.25
+
+	var middle_left := road_center.lerp(edge[0], interpolators.x)
+	var middle_right := road_center.lerp(edge[4], interpolators.y)
+	_triangulate_road(road_center, middle_left, middle_right, edge, has_road_through_edge)
+
+	if cell.has_river_through_edge(cell.previous_direction(direction as HexCell.HexDirection)):
+		_triangulate_road_edge(road_center, center, middle_left)
+	if cell.has_river_through_edge(cell.next_direction(direction as HexCell.HexDirection)):
+		_triangulate_road_edge(road_center, middle_right, center)
+
 #endregion
 
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
@@ -359,7 +422,7 @@ func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -
 	for i in range(edge.size() - 1):
 		_terrain_mesh.add_triangle([center, edge[i], edge[i + 1]], colors)
 
-func _triangulate_strip(from: PackedVector3Array, to: PackedVector3Array, c1: Color, c2: Color, has_road: bool = true) -> void:
+func _triangulate_strip(from: PackedVector3Array, to: PackedVector3Array, c1: Color, c2: Color, has_road: bool = false) -> void:
 	var colors := [c1, c1, c2, c2]
 	for i in range(from.size() - 1):
 		_terrain_mesh.add_quad([from[i], from[i + 1], to[i], to[i + 1]], colors)

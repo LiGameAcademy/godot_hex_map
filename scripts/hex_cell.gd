@@ -49,7 +49,9 @@ var river_surface_y : float:
 
 ## 每个方向是否有路，索引与 HexDirection 对应
 var roads: PackedByteArray = PackedByteArray([0, 0, 0, 0, 0, 0])
-
+var river_enter_or_exit_direction: HexDirection:
+	get:
+		return incoming_river if has_incoming_river else outgoing_river
 var chunk : HexGridChunk
 
 #region 邻居海拔

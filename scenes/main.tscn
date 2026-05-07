@@ -36,6 +36,7 @@ grid = NodePath("../HexGrid")
 [node name="HexMapEditor" type="Node" parent="." unique_id=1904008612 node_paths=PackedStringArray("hex_grid")]
 script = ExtResource("2_0wfyh")
 hex_grid = NodePath("../HexGrid")
+disable_color = true
 metadata/_custom_type_script = "uid://dmgota36soris"
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=207554144]

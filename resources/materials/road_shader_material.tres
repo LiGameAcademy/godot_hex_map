@@ -2,6 +2,18 @@
 
 [ext_resource type="Shader" uid="uid://dlpwx7lx7j3fh" path="res://resources/shaders/road.gdshader" id="1_862ag"]
 
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_862ag"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_h1j6h"]
+noise = SubResource("FastNoiseLite_862ag")
+
 [resource]
 render_priority = 0
 shader = ExtResource("1_862ag")
+shader_parameter/road_color = Color(1, 0.1, 0.1, 1)
+shader_parameter/noise_tex = SubResource("NoiseTexture2D_h1j6h")
+shader_parameter/alpha_smoothstep = Vector2(0.4, 0.7)
+shader_parameter/noise_scale = 0.025
+shader_parameter/color_noise_strength = 0.75
+shader_parameter/color_noise_bias = 0.25
+shader_parameter/normal_offset = 0.02
