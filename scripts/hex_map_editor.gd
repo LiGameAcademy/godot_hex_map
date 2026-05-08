@@ -24,6 +24,8 @@ enum RoadMode {
 @export var brush_radius: int = 0
 @export var river_mode: RiverMode = RiverMode.IGNORE
 @export var road_mode: RoadMode = RoadMode.IGNORE
+@export var active_water_level := 0
+@export var disable_water_level : bool = false
 
 var _previous_cell: HexCell = null
 var _is_drag: bool = false
@@ -36,6 +38,8 @@ signal elevation_disable_changed()
 signal brush_radius_changed(radius: int)
 signal river_mode_changed(mode: RiverMode)
 signal road_mode_changed(mode: RoadMode)
+signal water_level_changed(water_level: int)
+signal water_disable_chanegd()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(hex_grid):
@@ -111,6 +115,18 @@ func set_road_mode(mode: int) -> void:
 		return
 	road_mode = m
 	road_mode_changed.emit(road_mode)
+
+func set_water_level(water_level: int) -> void:
+	if active_water_level == water_level:
+		return
+	active_water_level = water_level
+	water_level_changed.emit(water_level)
+
+func set_disable_water_level(disable: bool) -> void:
+	if disable_water_level == disable:
+		return
+	disable_water_level = disable
+	water_disable_chanegd.emit()
 
 func refresh() -> void:
 	hex_grid.refresh()
@@ -197,6 +213,8 @@ func _edit_cell(cell: HexCell, drag_center: HexCell = null) -> void:
 		cell.color = colors.values()[active_color]
 	if not disable_elevation:
 		cell.elevation = active_elevation
+	if not disable_water_level:
+		cell.water_level = active_water_level
 
 func _validate_drag(current_cell: HexCell) -> void:
 	_is_drag = false

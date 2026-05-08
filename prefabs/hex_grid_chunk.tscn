@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://do5bqbp47h8a3" path="res://prefabs/hex_mesh.tscn" id="2_p6i6p"]
 [ext_resource type="Material" uid="uid://bljr1cwyku2tx" path="res://resources/materials/river_shader_material.tres" id="3_n4gxk"]
 [ext_resource type="Material" uid="uid://ptaxwsghis3u" path="res://resources/materials/road_shader_material.tres" id="4_qw6ox"]
+[ext_resource type="Material" uid="uid://wnxepfjaidk" path="res://resources/materials/water_shader_material.tres" id="5_t2flr"]
 
 [node name="HexGridChunk" type="Node3D" unique_id=258472898]
 script = ExtResource("1_p6i6p")
@@ -20,3 +21,8 @@ persistent_material = ExtResource("3_n4gxk")
 [node name="RoadMesh" parent="." unique_id=1977745933 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
 persistent_material = ExtResource("4_qw6ox")
+
+[node name="WaterMesh" parent="." unique_id=614090092 instance=ExtResource("2_p6i6p")]
+unique_name_in_owner = true
+show_wireframe = false
+persistent_material = ExtResource("5_t2flr")

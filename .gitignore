@@ -7,3 +7,4 @@
 /git-export-archives
 /scripts/git-hooks
 /scripts/export-all-commit-zips.ps1
+/prefabs/*.tmp

@@ -45,13 +45,28 @@ var stream_bed_y: float:
 		return (elevation + HexMetrics.STREAM_BED_ELEVATION_OFFSET) * HexMetrics.ELEVATION_STEP
 var river_surface_y : float:
 	get:
-		return float(elevation + HexMetrics.RIVER_SURFACE_Y_OFFSET) * HexMetrics.ELEVATION_STEP
+		return float(elevation + HexMetrics.WATER_ELEVATION_OFFSET) * HexMetrics.ELEVATION_STEP
+var water_surface_y: float:
+	get:
+		return (water_level + HexMetrics.WATER_ELEVATION_OFFSET) * HexMetrics.ELEVATION_STEP
 
 ## 每个方向是否有路，索引与 HexDirection 对应
 var roads: PackedByteArray = PackedByteArray([0, 0, 0, 0, 0, 0])
 var river_enter_or_exit_direction: HexDirection:
 	get:
 		return incoming_river if has_incoming_river else outgoing_river
+		
+var water_level: int = 0:
+	set(value):
+		if water_level == value:
+			return
+		water_level = value
+		_refresh()
+
+var is_underwater: bool:
+	get:
+		return water_level > elevation
+
 var chunk : HexGridChunk
 
 #region 邻居海拔

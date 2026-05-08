@@ -7,6 +7,8 @@ extends MarginContainer
 @onready var option_button_river: OptionButton = %OptionButtonRiver
 @onready var option_button_road: OptionButton = %OptionButtonRoad
 @onready var refresh_button: Button = %RefreshButton
+@onready var spin_box_water: SpinBox = %SpinBoxWater
+@onready var check_box_water: CheckBox = %CheckBoxWater
 
 ## 表现层：负责 UI 展示与交互输入，依赖 HexMapEditor 逻辑层的 API / signal
 @export var editor: HexMapEditor
@@ -29,6 +31,8 @@ func _ready() -> void:
 	spin_box_elevation.value = editor.active_elevation
 	check_box_elevation.button_pressed = not editor.disable_elevation
 	spin_box_brush_size.value = editor.brush_radius
+	spin_box_water.value = editor.active_water_level
+	check_box_water.button_pressed = not editor.disable_water_level
 	
 	_syncing_mode_ui = true
 	option_button_river.select(int(editor.river_mode))
@@ -37,7 +41,6 @@ func _ready() -> void:
 
 	editor.river_mode_changed.connect(_on_editor_river_mode_changed)
 	editor.road_mode_changed.connect(_on_editor_road_mode_changed)
-
 	
 	option_button_color.item_selected.connect(
 		func(index : int) -> void:
@@ -54,6 +57,15 @@ func _ready() -> void:
 		func(toggled_on: bool) -> void:
 			editor.set_disable_elevation(toggled_on)
 			spin_box_elevation.editable = toggled_on
+	)
+	spin_box_water.value_changed.connect(
+		func(value: float) -> void:
+			editor.set_water_level(int(value))
+	)
+	check_box_water.toggled.connect(
+		func(toggled_on: bool) -> void:
+			editor.set_disable_water_level(toggled_on)
+			spin_box_water.editable = toggled_on
 	)
 	spin_box_brush_size.value_changed.connect(
 		func(value: float) -> void:

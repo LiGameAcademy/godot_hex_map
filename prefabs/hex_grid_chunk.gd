@@ -8,6 +8,7 @@ var _cells: Array[HexCell] = []
 @onready var _terrain_mesh: HexMesh = %TerrainMesh
 @onready var _river_mesh: HexMesh = %RiverMesh
 @onready var _road_mesh: HexMesh = %RoadMesh
+@onready var _water_mesh: HexMesh = %WaterMesh
 
 func _ready() -> void:
 	var size := HexMetrics.CHUNK_SIZE_X * HexMetrics.CHUNK_SIZE_Z
@@ -27,7 +28,9 @@ func _process(_delta: float) -> void:
 		_river_mesh.begin_triangles()
 	if is_instance_valid(_road_mesh):
 		_road_mesh.begin_triangles()
-		
+	if is_instance_valid(_water_mesh):
+		_water_mesh.begin_triangles()
+
 	for cell in _cells:
 		if is_instance_valid(cell):
 			_triangulate_cell(cell)
@@ -38,6 +41,8 @@ func _process(_delta: float) -> void:
 		_river_mesh.commit_triangles()
 	if is_instance_valid(_road_mesh):
 		_road_mesh.commit_triangles()
+	if is_instance_valid(_water_mesh):
+		_water_mesh.commit_triangles()
 
 	set_process(false)
 
@@ -73,6 +78,9 @@ func _triangulate_cell(cell: HexCell) -> void:
 
 		if direction <= HexCell.HexDirection.SE:
 			_triangulate_connection(cell, direction, edge)
+		
+		if cell.is_underwater:
+			_triangulate_water(cell, direction, center)
 
 func _triangulate_without_river(cell: HexCell, direction: int, center: Vector3, edge: PackedVector3Array) -> void:
 	_triangulate_fan(center, edge, cell.color)
@@ -341,7 +349,6 @@ func _triangulate_road_edge(center: Vector3, middle_left: Vector3, middle_right:
 	_road_mesh.add_triangle_uv([center, middle_left, middle_right], [Vector2(1.0, 0.0), Vector2(0.0, 0.0), Vector2(0.0, 0.0)])
 
 func _triangulate_road_quad(vertices: PackedVector3Array) -> void:
-	#var colors : PackedColorArray = [Color.RED, Color.RED, Color.RED, Color.RED]
 	_road_mesh.add_quad_uv_rect([vertices[0], vertices[1], vertices[3], vertices[4]], [0.0, 1.0, 0.0, 0.0])
 	_road_mesh.add_quad_uv_rect([vertices[1], vertices[2], vertices[4], vertices[5]], [1.0, 0.0, 0.0, 0.0])
 
@@ -416,6 +423,28 @@ func _triangulate_road_adjacent_to_river(cell: HexCell, direction: HexCell.HexDi
 		_triangulate_road_edge(road_center, middle_right, center)
 
 #endregion
+
+func _triangulate_water(cell: HexCell, direction: int, center: Vector3) -> void:
+	var water_center := center
+	water_center.y = cell.water_surface_y
+	var v1 := water_center + HexMetrics.get_first_solid_corner(direction)
+	var v2 := water_center + HexMetrics.get_second_solid_corner(direction)
+	_water_mesh.add_triangle([center, v1, v2], [Color.WHITE, Color.WHITE, Color.WHITE])
+
+	if direction <= HexCell.HexDirection.SE:
+		var neighbor := cell.get_neighbor(direction)
+		if neighbor == null or not neighbor.is_underwater:
+			return
+		var bridge := HexMetrics.get_bridge(direction)
+		var e1 := v1 + bridge
+		var e2 := v2 + bridge
+		_water_mesh.add_quad([v1, v2, e1, e2], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE])
+		if direction < HexCell.HexDirection.SE:
+			var next_direction := cell.next_direction(direction)
+			var next_neighbor := cell.get_neighbor(next_direction)
+			if next_neighbor == null or not next_neighbor.is_underwater:
+				return
+			_water_mesh.add_triangle([v2, e2, v2 + HexMetrics.get_bridge(next_direction)], [Color.WHITE, Color.WHITE, Color.WHITE])
 
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
 	var colors := [color, color, color]
