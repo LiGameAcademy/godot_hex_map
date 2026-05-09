@@ -52,6 +52,8 @@ const STREAM_BED_ELEVATION_OFFSET: float = -1.0
 #const RIVER_SURFACE_Y_OFFSET: float = -0.1
 
 const WATER_ELEVATION_OFFSET := -0.5
+const WATER_FACTOR = 0.6
+const WATER_BLEND_FACTOR = 1 - WATER_FACTOR
 
 static var noise: FastNoiseLite
 
@@ -116,6 +118,15 @@ static func sample_noise(position: Vector3) -> Vector3:
 	var ny := noise.get_noise_3d(x + 100.0, y + 200.0, z + 300.0)
 	var nz := noise.get_noise_3d(x - 100.0, y - 200.0, z - 300.0)
 	return Vector3(nx, ny, nz)
+
+static func get_first_water_corner(index: int) -> Vector3:
+	return CORNERS[index] * WATER_FACTOR
+
+static func get_second_water_corner(index: int) -> Vector3:
+	return CORNERS[index + 1] * WATER_FACTOR
+
+static func get_water_bridge(index: int) -> Vector3:
+	return (CORNERS[index] + CORNERS[index + 1]) * WATER_BLEND_FACTOR
 
 ## 使用噪声对顶点进行扰动
 static func perturb(p: Vector3) -> Vector3:
