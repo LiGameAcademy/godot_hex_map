@@ -15,7 +15,7 @@ color_ramp = SubResource("Gradient_dorey")
 seamless = true
 
 [resource]
-render_priority = 0
+render_priority = 1
 shader = ExtResource("1_dorey")
 shader_parameter/_main_tex = SubResource("NoiseTexture2D_ghcn0")
 shader_parameter/_color = Color(0.2, 0.4, 0.9, 0.6)

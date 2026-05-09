@@ -17,7 +17,7 @@ float get_waves(vec2 world_xz, sampler2D noise_tex, float time) {
 }
 
 float get_foam(float shore_value, vec2 world_xz, sampler2D noise_tex, float time) {
-	float shore = sqrt(shore_value);
+	float shore = sqrt(shore_value) * 0.9;
 
 	vec2 noise_uv = world_xz + TIME * 0.25;
 	vec4 noise = texture(noise_tex, noise_uv * 0.015);

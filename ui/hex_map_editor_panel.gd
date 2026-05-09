@@ -55,7 +55,7 @@ func _ready() -> void:
 	)
 	check_box_elevation.toggled.connect(
 		func(toggled_on: bool) -> void:
-			editor.set_disable_elevation(toggled_on)
+			editor.set_disable_elevation(not toggled_on)
 			spin_box_elevation.editable = toggled_on
 	)
 	spin_box_water.value_changed.connect(
@@ -64,7 +64,7 @@ func _ready() -> void:
 	)
 	check_box_water.toggled.connect(
 		func(toggled_on: bool) -> void:
-			editor.set_disable_water_level(toggled_on)
+			editor.set_disable_water_level(not toggled_on)
 			spin_box_water.editable = toggled_on
 	)
 	spin_box_brush_size.value_changed.connect(

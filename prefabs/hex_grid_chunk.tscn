@@ -12,7 +12,6 @@ script = ExtResource("1_p6i6p")
 
 [node name="TerrainMesh" parent="." unique_id=1783659955 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
-visible = false
 
 [node name="RiverMesh" parent="." unique_id=1661439844 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
