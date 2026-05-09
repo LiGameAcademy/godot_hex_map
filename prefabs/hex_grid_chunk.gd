@@ -427,12 +427,20 @@ func _triangulate_road_adjacent_to_river(cell: HexCell, direction: HexCell.HexDi
 func _triangulate_water(cell: HexCell, direction: int, center: Vector3) -> void:
 	var water_center := center
 	water_center.y = cell.water_surface_y
+	var neighbor := cell.get_neighbor(direction)
+	if neighbor == null:
+		_triangulate_open_water(cell, direction, water_center, neighbor) # 这个函数已能处理 null
+	elif not neighbor.is_underwater:
+		_triangulate_water_shore(cell, direction, water_center, neighbor)
+	else:
+		_triangulate_open_water(cell, direction, water_center, neighbor)
+
+func _triangulate_open_water(cell: HexCell, direction: int, water_center: Vector3, neighbor: HexCell) -> void:
 	var v1 := water_center + HexMetrics.get_first_solid_corner(direction)
 	var v2 := water_center + HexMetrics.get_second_solid_corner(direction)
-	_water_mesh.add_triangle([center, v1, v2], [Color.WHITE, Color.WHITE, Color.WHITE])
+	_water_mesh.add_triangle([water_center, v1, v2], [Color.WHITE, Color.WHITE, Color.WHITE])
 
 	if direction <= HexCell.HexDirection.SE:
-		var neighbor := cell.get_neighbor(direction)
 		if neighbor == null or not neighbor.is_underwater:
 			return
 		var bridge := HexMetrics.get_bridge(direction)
@@ -445,6 +453,35 @@ func _triangulate_water(cell: HexCell, direction: int, center: Vector3) -> void:
 			if next_neighbor == null or not next_neighbor.is_underwater:
 				return
 			_water_mesh.add_triangle([v2, e2, v2 + HexMetrics.get_bridge(next_direction)], [Color.WHITE, Color.WHITE, Color.WHITE])
+
+func _triangulate_water_shore(cell: HexCell, direction: int, center: Vector3, neighbor: HexCell) -> void:
+	var edge := _make_edge(
+		center + HexMetrics.get_first_solid_corner(direction),
+		center + HexMetrics.get_second_solid_corner(direction)
+	)
+	var colors := [Color.WHITE, Color.WHITE, Color.WHITE]
+	_water_mesh.add_triangle([center, edge[0], edge[1]], colors)
+	_water_mesh.add_triangle([center, edge[1], edge[2]], colors)
+	_water_mesh.add_triangle([center, edge[2], edge[3]], colors)
+	_water_mesh.add_triangle([center, edge[3], edge[4]], colors)
+
+	var bridge := HexMetrics.get_bridge(direction)
+	var edge2 := _make_edge(
+		edge[0] + bridge,
+		edge[-1] + bridge
+	)
+	var colors2 := [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE]
+	_water_mesh.add_quad([edge[0], edge[1], edge2[0], edge2[1]], colors2)
+	_water_mesh.add_quad([edge[1], edge[2], edge2[1], edge2[2]], colors2)
+	_water_mesh.add_quad([edge[2], edge[3], edge2[2], edge2[3]], colors2)
+	_water_mesh.add_quad([edge[3], edge[4], edge2[3], edge2[4]], colors2)
+
+	var next_direction = cell.next_direction(direction)
+	var next_neighbor := cell.get_neighbor(next_direction)
+	if next_neighbor == null:
+		return
+	var next_bridge := HexMetrics.get_bridge(next_direction)
+	_water_mesh.add_triangle([edge[4], edge2[4], edge[4] + next_bridge], colors)
 
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
 	var colors := [color, color, color]
