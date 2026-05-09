@@ -9,6 +9,7 @@ var _cells: Array[HexCell] = []
 @onready var _river_mesh: HexMesh = %RiverMesh
 @onready var _road_mesh: HexMesh = %RoadMesh
 @onready var _water_mesh: HexMesh = %WaterMesh
+@onready var _water_shore_mesh: HexMesh = %WaterShoreMesh
 
 func _ready() -> void:
 	var size := HexMetrics.CHUNK_SIZE_X * HexMetrics.CHUNK_SIZE_Z
@@ -30,6 +31,8 @@ func _process(_delta: float) -> void:
 		_road_mesh.begin_triangles()
 	if is_instance_valid(_water_mesh):
 		_water_mesh.begin_triangles()
+	if is_instance_valid(_water_shore_mesh):
+		_water_shore_mesh.begin_triangles()
 
 	for cell in _cells:
 		if is_instance_valid(cell):
@@ -43,6 +46,8 @@ func _process(_delta: float) -> void:
 		_road_mesh.commit_triangles()
 	if is_instance_valid(_water_mesh):
 		_water_mesh.commit_triangles()
+	if is_instance_valid(_water_shore_mesh):
+		_water_shore_mesh.commit_triangles()
 
 	set_process(false)
 
@@ -470,18 +475,24 @@ func _triangulate_water_shore(cell: HexCell, direction: int, center: Vector3, ne
 		edge[0] + bridge,
 		edge[-1] + bridge
 	)
-	var colors2 := [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE]
-	_water_mesh.add_quad([edge[0], edge[1], edge2[0], edge2[1]], colors2)
-	_water_mesh.add_quad([edge[1], edge[2], edge2[1], edge2[2]], colors2)
-	_water_mesh.add_quad([edge[2], edge[3], edge2[2], edge2[3]], colors2)
-	_water_mesh.add_quad([edge[3], edge[4], edge2[3], edge2[4]], colors2)
+	#var colors2 := [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE]
+	var shore_uv_rect: PackedFloat32Array = [0.0, 0.0, 0.0, 1.0]
+	_water_shore_mesh.add_quad_uv_rect([edge[0], edge[1], edge2[0], edge2[1]], shore_uv_rect)
+	_water_shore_mesh.add_quad_uv_rect([edge[1], edge[2], edge2[1], edge2[2]], shore_uv_rect)
+	_water_shore_mesh.add_quad_uv_rect([edge[2], edge[3], edge2[2], edge2[3]], shore_uv_rect)
+	_water_shore_mesh.add_quad_uv_rect([edge[3], edge[4], edge2[3], edge2[4]], shore_uv_rect)
 
 	var next_direction = cell.next_direction(direction)
 	var next_neighbor := cell.get_neighbor(next_direction)
 	if next_neighbor == null:
 		return
 	var next_bridge := HexMetrics.get_bridge(next_direction)
-	_water_mesh.add_triangle([edge[4], edge2[4], edge[4] + next_bridge], colors)
+	var triangle_uvs : PackedVector2Array = [
+		Vector2(0.0, 0.0), 
+		Vector2(0.0, 1.0),
+		Vector2(0.0, 0.0 if next_neighbor.is_underwater else 1.0), 
+	]
+	_water_shore_mesh.add_triangle_uv([edge[4], edge2[4], edge[4] + next_bridge], triangle_uvs)
 
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
 	var colors := [color, color, color]
