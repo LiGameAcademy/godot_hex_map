@@ -9,7 +9,7 @@ uniform float _metallic : hint_range(0.0, 1.0, 0.1) = 0.0;
 uniform float _glossiness : hint_range(0.0, 1.0, 0.1) = 0.0;
 
 //uniform float flow_speed : hint_range(0.0, 5.0) = 1.0;
-uniform float highlight_strength : hint_range(0.0, 5.0) = 2.0;
+//uniform float highlight_strength : hint_range(0.0, 5.0) = 2.0;
 
 varying vec3 world_position;
 
@@ -21,9 +21,13 @@ void fragment() {
 	float shore = UV.y;
 	float foam = get_foam(shore, world_position.xz, _main_tex, TIME);
 	float waves = get_waves(world_position.xz, _main_tex, TIME);
-    float blend_noise = get_river(_main_tex, UV2);
+
+	float shore_water = max(foam, waves);
+    float river = get_river(_main_tex, UV2);
 	
-	vec3 c = clamp(_color.rgb + vec3(blend_noise * highlight_strength), 0.0, 1.0);
+	float water = mix(shore_water, river, shore);
+	
+	vec3 c = clamp(_color.rgb + water, 0.0, 1.0);
 	
 	METALLIC = _metallic;
 	ROUGHNESS = clamp(1.0 - _glossiness, 0.0, 1.0);

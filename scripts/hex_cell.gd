@@ -61,6 +61,7 @@ var water_level: int = 0:
 		if water_level == value:
 			return
 		water_level = value
+		_validate_river_constraints()
 		_refresh()
 
 var is_underwater: bool:
@@ -136,7 +137,8 @@ func set_outgoing_river(direction: HexDirection) -> void:
 	if neighbor == null:
 		return
 	# 2. 河流只能往低处流（允许平流，禁止往高处）
-	if elevation < neighbor.elevation:
+	#if elevation < neighbor.elevation:
+	if not is_valid_river_destination(neighbor):
 		return
 	# 3. 清理旧的 outgoing / 重叠的 incoming
 	remove_outgoing_river()
@@ -244,13 +246,18 @@ func _set_road(index: int, state: bool) -> void:
 
 #endregion
 
+func is_valid_river_destination(neighbor: HexCell) -> bool:
+	return is_instance_valid(neighbor) and (
+		elevation >= neighbor.elevation or water_level >= neighbor.elevation
+	)
+
 func refresh() -> void:
 	_refresh()
 
 func _validate_river_constraints() -> void:
-	if has_outgoing_river and elevation < get_neighbor(outgoing_river).elevation:
+	if has_outgoing_river and not is_valid_river_destination(get_neighbor(outgoing_river)):
 		remove_outgoing_river()
-	if has_incoming_river and elevation > get_neighbor(incoming_river).elevation:
+	if has_incoming_river and  not get_neighbor(incoming_river).is_valid_river_destination(self):
 		remove_incoming_river()
 
 func _refresh() -> void:

@@ -550,22 +550,38 @@ func _triangulate_estuary(edge1: PackedVector3Array, edge2: PackedVector3Array, 
 	#_estuaries_mesh.add_quad_uv([edge1[1], edge1[2], edge2[0], edge2[1]], [Vector2(0.0, 1.0), Vector2(1.0, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)])
 	#_estuaries_mesh.add_triangle_uv([edge1[2], edge2[1], edge2[3]], [Vector2(0.5, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)])
 	#_estuaries_mesh.add_quad_uv([edge1[2], edge1[3], edge2[3], edge2[4]], [Vector2(0.0, 1.0), Vector2(1.0, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)])
-
-	_estuaries_mesh.add_quad_uv(
-		[edge1[1], edge1[2], edge2[0], edge2[1]], 
-		[Vector2(0.0, 0.0), Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 1.0)], true,
-		[Vector2(0.0, 1.0), Vector2(1.0, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)]
-	)
-	_estuaries_mesh.add_triangle_uv(
-		[edge1[2], edge2[1], edge2[3]], 
-		[Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 1.0)], true,
-		[Vector2(0.5, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)]
-	)
-	_estuaries_mesh.add_quad_uv(
-		[edge1[2], edge1[3], edge2[3], edge2[4]], 
-		[Vector2(0.0, 0.0), Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 1.0)], true,
-		[Vector2(0.0, 1.0), Vector2(1.0, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)]
-	)
+	if incoming_river:
+		_estuaries_mesh.add_quad_uv(
+			[edge2[1], edge2[0], edge1[2], edge1[1]], 
+			[Vector2(0.0, 1.0), Vector2(0.0, 1.0), Vector2(0.0, 0.0), Vector2(0.0, 0.0)], true,
+			[Vector2(1.0, 0.8), Vector2(1.5, 1.0), Vector2(0.5, 1.1), Vector2(0.7, 1.15)]
+		)
+		_estuaries_mesh.add_triangle_uv(
+			[edge1[2], edge2[1], edge2[3]], 
+			[Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 1.0)], true,
+			[Vector2(0.5, 1.1), Vector2(1.0, 0.8), Vector2(0.0, 0.8)]
+		)
+		_estuaries_mesh.add_quad_uv(
+			[ edge2[3], edge1[2], edge2[4], edge1[3]], 
+			[Vector2(0.0, 1.0), Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 0.0)], true,
+			[Vector2(0.0, 0.8), Vector2(0.5, 1.1), Vector2(-0.5, 1.0), Vector2(0.3, 1.15)]
+		)
+	else:
+		_estuaries_mesh.add_quad_uv(
+			[edge2[1], edge2[0], edge1[2], edge1[1]], 
+			[Vector2(0.0, 1.0), Vector2(0.0, 1.0), Vector2(0.0, 0.0), Vector2(0.0, 0.0)], true,
+			[Vector2(0.0, 0.0), Vector2(-0.5, -0.2), Vector2(0.5, -0.3), Vector2(0.3, -0.35)]
+		)
+		_estuaries_mesh.add_triangle_uv(
+			[edge1[2], edge2[1], edge2[3]], 
+			[Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 1.0)], true,
+			[Vector2(0.5, -0.3), Vector2(0.0, 0.0), Vector2(1.0, 0.0)]
+		)
+		_estuaries_mesh.add_quad_uv(
+			[ edge2[3], edge1[2], edge2[4], edge1[3]], 
+			[Vector2(0.0, 1.0), Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 0.0)], true,
+			[Vector2(1.0, 0.0), Vector2(0.5, -0.3), Vector2(1.5, -0.2), Vector2(0.7, -0.35)]
+		)
 
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
 	var colors := [color, color, color]
