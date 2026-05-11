@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bypyoa4k0yygk" path="res://prefabs/hex_grid_chunk.gd" id="1_p6i6p"]
 [ext_resource type="PackedScene" uid="uid://do5bqbp47h8a3" path="res://prefabs/hex_mesh.tscn" id="2_p6i6p"]
 [ext_resource type="Material" uid="uid://bljr1cwyku2tx" path="res://resources/materials/river_shader_material.tres" id="3_n4gxk"]
+[ext_resource type="Material" uid="uid://dvspx2lgf77r4" path="res://resources/materials/estuaries_shader_material.tres" id="4_act00"]
 [ext_resource type="Material" uid="uid://ptaxwsghis3u" path="res://resources/materials/road_shader_material.tres" id="4_qw6ox"]
 [ext_resource type="Material" uid="uid://wnxepfjaidk" path="res://resources/materials/water_shader_material.tres" id="5_t2flr"]
 [ext_resource type="Material" uid="uid://dvf7pq0g3vb0a" path="res://resources/materials/water_shore_shader_material.tres" id="6_d2m5i"]
@@ -19,16 +20,22 @@ cast_shadow = 0
 show_wireframe = false
 persistent_material = ExtResource("3_n4gxk")
 
+[node name="EstuariesMesh" parent="." unique_id=117565725 instance=ExtResource("2_p6i6p")]
+unique_name_in_owner = true
+cast_shadow = 0
+persistent_material = ExtResource("4_act00")
+
 [node name="RoadMesh" parent="." unique_id=1977745933 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
 persistent_material = ExtResource("4_qw6ox")
 
 [node name="WaterMesh" parent="." unique_id=614090092 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
+cast_shadow = 0
 show_wireframe = false
 persistent_material = ExtResource("5_t2flr")
 
 [node name="WaterShoreMesh" parent="." unique_id=391653712 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
-show_wireframe = false
+cast_shadow = 0
 persistent_material = ExtResource("6_d2m5i")

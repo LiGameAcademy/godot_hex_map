@@ -32,3 +32,19 @@ float get_foam(float shore_value, vec2 world_xz, sampler2D noise_tex, float time
 	float foam = max(foam1, foam2) * shore;
 	return foam;
 }
+
+float get_river(sampler2D noise_tex, vec2 river_uv){
+	float flow_speed = 0.1;
+	vec2 uv = river_uv;
+	uv.x = fract(uv.x * 0.0625 + TIME * 0.005);
+	uv.y -= fract(TIME * flow_speed);
+	
+	vec2 uv2 = river_uv;
+	uv2.x = fract(uv2.x * 0.0625 + TIME * 0.0052);
+	uv2.y -= fract(TIME * (flow_speed - 0.02));
+
+	vec4 noise_sample = texture(noise_tex, uv);
+	vec4 noise_sample2 = texture(noise_tex, uv2);
+	float blend_noise = noise_sample.r * noise_sample2.r;
+	return blend_noise;
+}

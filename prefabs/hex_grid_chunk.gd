@@ -7,6 +7,7 @@ var _cells: Array[HexCell] = []
 
 @onready var _terrain_mesh: HexMesh = %TerrainMesh
 @onready var _river_mesh: HexMesh = %RiverMesh
+@onready var _estuaries_mesh: HexMesh = %EstuariesMesh
 @onready var _road_mesh: HexMesh = %RoadMesh
 @onready var _water_mesh: HexMesh = %WaterMesh
 @onready var _water_shore_mesh: HexMesh = %WaterShoreMesh
@@ -27,6 +28,8 @@ func _process(_delta: float) -> void:
 		_terrain_mesh.begin_triangles()
 	if is_instance_valid(_river_mesh):
 		_river_mesh.begin_triangles()
+	if is_instance_valid(_estuaries_mesh):
+		_estuaries_mesh.begin_triangles()
 	if is_instance_valid(_road_mesh):
 		_road_mesh.begin_triangles()
 	if is_instance_valid(_water_mesh):
@@ -42,6 +45,8 @@ func _process(_delta: float) -> void:
 		_terrain_mesh.commit_triangles()
 	if is_instance_valid(_river_mesh):
 		_river_mesh.commit_triangles()
+	if is_instance_valid(_estuaries_mesh):
+		_estuaries_mesh.commit_triangles()
 	if is_instance_valid(_road_mesh):
 		_road_mesh.commit_triangles()
 	if is_instance_valid(_water_mesh):
@@ -491,11 +496,14 @@ func _triangulate_water_shore(cell: HexCell, direction: int, center: Vector3, ne
 		center2 + HexMetrics.get_first_solid_corner(opposite_direction)
 	)
 	#var colors2 := [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE]
-	var shore_uv_rect: PackedFloat32Array = [0.0, 0.0, 0.0, 1.0]
-	_water_shore_mesh.add_quad_uv_rect([edge[0], edge[1], edge2[0], edge2[1]], shore_uv_rect)
-	_water_shore_mesh.add_quad_uv_rect([edge[1], edge[2], edge2[1], edge2[2]], shore_uv_rect)
-	_water_shore_mesh.add_quad_uv_rect([edge[2], edge[3], edge2[2], edge2[3]], shore_uv_rect)
-	_water_shore_mesh.add_quad_uv_rect([edge[3], edge[4], edge2[3], edge2[4]], shore_uv_rect)
+	if cell.has_river_through_edge(direction):
+		_triangulate_estuary(edge, edge2, cell.incoming_river == direction)
+	else:
+		var shore_uv_rect: PackedFloat32Array = [0.0, 0.0, 0.0, 1.0]
+		_water_shore_mesh.add_quad_uv_rect([edge[0], edge[1], edge2[0], edge2[1]], shore_uv_rect)
+		_water_shore_mesh.add_quad_uv_rect([edge[1], edge[2], edge2[1], edge2[2]], shore_uv_rect)
+		_water_shore_mesh.add_quad_uv_rect([edge[2], edge[3], edge2[2], edge2[3]], shore_uv_rect)
+		_water_shore_mesh.add_quad_uv_rect([edge[3], edge[4], edge2[3], edge2[4]], shore_uv_rect)
 
 	var next_direction = cell.next_direction(direction)
 	var next_neighbor := cell.get_neighbor(next_direction)
@@ -534,6 +542,30 @@ func _triangulate_waterfall_in_water(vertices: PackedVector3Array, y1: float, y2
 
 	# 3. 提交四边形时，必须严格遵守环形周长顺序：[左上, 右上, 右下, 左下]
 	_river_mesh.add_quad_uv_rect([v_tl, v_tr, v_bl, v_br], [0.0, 1.0, 0.8, 1.0], false)
+
+func _triangulate_estuary(edge1: PackedVector3Array, edge2: PackedVector3Array, incoming_river: bool) -> void:
+	_water_shore_mesh.add_triangle_uv([edge2[0], edge1[1], edge1[0]], [Vector2(0.0, 1.0), Vector2(0.0, 0.0), Vector2(0.0, 0.0)])
+	_water_shore_mesh.add_triangle_uv([edge2[-1], edge1[-1], edge1[-2]], [Vector2(0.0, 1.0), Vector2(0.0, 0.0), Vector2(0.0, 0.0)])
+
+	#_estuaries_mesh.add_quad_uv([edge1[1], edge1[2], edge2[0], edge2[1]], [Vector2(0.0, 1.0), Vector2(1.0, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)])
+	#_estuaries_mesh.add_triangle_uv([edge1[2], edge2[1], edge2[3]], [Vector2(0.5, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)])
+	#_estuaries_mesh.add_quad_uv([edge1[2], edge1[3], edge2[3], edge2[4]], [Vector2(0.0, 1.0), Vector2(1.0, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)])
+
+	_estuaries_mesh.add_quad_uv(
+		[edge1[1], edge1[2], edge2[0], edge2[1]], 
+		[Vector2(0.0, 0.0), Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 1.0)], true,
+		[Vector2(0.0, 1.0), Vector2(1.0, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)]
+	)
+	_estuaries_mesh.add_triangle_uv(
+		[edge1[2], edge2[1], edge2[3]], 
+		[Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 1.0)], true,
+		[Vector2(0.5, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)]
+	)
+	_estuaries_mesh.add_quad_uv(
+		[edge1[2], edge1[3], edge2[3], edge2[4]], 
+		[Vector2(0.0, 0.0), Vector2(0.0, 0.0), Vector2(0.0, 1.0), Vector2(0.0, 1.0)], true,
+		[Vector2(0.0, 1.0), Vector2(1.0, 1.0), Vector2(0.0, 0.0), Vector2(1.0, 0.0)]
+	)
 
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
 	var colors := [color, color, color]

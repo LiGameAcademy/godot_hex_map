@@ -58,11 +58,11 @@ func add_quad_uv_rect(vertices: PackedVector3Array, uv_rect: PackedFloat32Array,
 	]
 	add_quad_uv(vertices, uv, perturb)
 
-func add_quad_uv(vertices: PackedVector3Array, uvs: PackedVector2Array = PackedVector2Array(), perturb: bool = true) -> void:
-	add_triangle_uv([vertices[0], vertices[2], vertices[3]], [uvs[0], uvs[2], uvs[3]], perturb)
-	add_triangle_uv([vertices[1], vertices[0], vertices[3]], [uvs[1], uvs[0], uvs[3]], perturb)
+func add_quad_uv(vertices: PackedVector3Array, uvs: PackedVector2Array = PackedVector2Array(), perturb: bool = true, uvs2: PackedVector2Array = []) -> void:
+	add_triangle_uv([vertices[0], vertices[2], vertices[3]], [uvs[0], uvs[2], uvs[3]], perturb, [uvs2[0], uvs2[2], uvs2[3]] if uvs2.size() >= 4 else [])
+	add_triangle_uv([vertices[1], vertices[0], vertices[3]], [uvs[1], uvs[0], uvs[3]], perturb, [uvs2[1], uvs2[0], uvs2[3]] if uvs2.size() >= 4 else [])
 
-func add_triangle_uv(vertices: PackedVector3Array, uvs: PackedVector2Array, perturb: bool = true) -> void:
+func add_triangle_uv(vertices: PackedVector3Array, uvs: PackedVector2Array, perturb: bool = true, uvs2: PackedVector2Array = []) -> void:
 	var vs : PackedVector3Array
 	if perturb:
 		for v in vertices:
@@ -72,6 +72,8 @@ func add_triangle_uv(vertices: PackedVector3Array, uvs: PackedVector2Array, pert
 	for i in range(3):
 		_surface_tool.set_color(Color.WHITE)
 		_surface_tool.set_uv(uvs[i])
+		if i < uvs2.size():
+			_surface_tool.set_uv2(uvs2[i])
 		_surface_tool.add_vertex(vs[i])
 		#_wireframe_vertices.append(vertices[i])
 	_wireframe_vertices.append(vs[0]); _wireframe_vertices.append(vs[1])

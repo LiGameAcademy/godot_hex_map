@@ -1,26 +1,14 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://bljr1cwyku2tx"]
 
 [ext_resource type="Shader" uid="uid://sgp8q1bpm70v" path="res://resources/shaders/river.gdshader" id="1_dorey"]
-
-[sub_resource type="Gradient" id="Gradient_dorey"]
-offsets = PackedFloat32Array(0.5397112, 0.9025271)
-colors = PackedColorArray(0, 0, 0, 1, 0.9297146, 0.9297147, 0.9297146, 1)
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_dorey"]
-frequency = 0.1
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ghcn0"]
-noise = SubResource("FastNoiseLite_dorey")
-color_ramp = SubResource("Gradient_dorey")
-seamless = true
+[ext_resource type="Texture2D" uid="uid://keutoldn7dgo" path="res://resources/textures/tiling-perlin-noise.png" id="2_ghcn0"]
 
 [resource]
-render_priority = 1
+render_priority = 0
 shader = ExtResource("1_dorey")
-shader_parameter/_main_tex = SubResource("NoiseTexture2D_ghcn0")
+shader_parameter/_main_tex = ExtResource("2_ghcn0")
 shader_parameter/_color = Color(0.2, 0.4, 0.9, 0.6)
 shader_parameter/_metallic = 0.0
 shader_parameter/_glossiness = 0.5
 shader_parameter/flow_speed = 0.10000000475
-shader_parameter/u_scale = 0.0625
 shader_parameter/highlight_strength = 0.9610000456475
