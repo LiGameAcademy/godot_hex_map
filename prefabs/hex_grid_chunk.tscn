@@ -7,6 +7,8 @@
 [ext_resource type="Material" uid="uid://ptaxwsghis3u" path="res://resources/materials/road_shader_material.tres" id="4_qw6ox"]
 [ext_resource type="Material" uid="uid://wnxepfjaidk" path="res://resources/materials/water_shader_material.tres" id="5_t2flr"]
 [ext_resource type="Material" uid="uid://dvf7pq0g3vb0a" path="res://resources/materials/water_shore_shader_material.tres" id="6_d2m5i"]
+[ext_resource type="Script" uid="uid://cjk3w7sh4abf7" path="res://scripts/hex_feature_manager.gd" id="8_0n84i"]
+[ext_resource type="PackedScene" uid="uid://dgy7lflqsrvrl" path="res://prefabs/feature_cube.tscn" id="9_l81wb"]
 
 [node name="HexGridChunk" type="Node3D" unique_id=258472898]
 script = ExtResource("1_p6i6p")
@@ -39,3 +41,9 @@ persistent_material = ExtResource("5_t2flr")
 unique_name_in_owner = true
 cast_shadow = 0
 persistent_material = ExtResource("6_d2m5i")
+
+[node name="HexFeatureManager" type="Node3D" parent="." unique_id=949338551]
+unique_name_in_owner = true
+script = ExtResource("8_0n84i")
+feature_prefab = ExtResource("9_l81wb")
+metadata/_custom_type_script = "uid://cjk3w7sh4abf7"

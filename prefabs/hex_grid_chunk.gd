@@ -11,6 +11,7 @@ var _cells: Array[HexCell] = []
 @onready var _road_mesh: HexMesh = %RoadMesh
 @onready var _water_mesh: HexMesh = %WaterMesh
 @onready var _water_shore_mesh: HexMesh = %WaterShoreMesh
+@onready var _feature_manager: HexFeatureManager = %HexFeatureManager
 
 func _ready() -> void:
 	var size := HexMetrics.CHUNK_SIZE_X * HexMetrics.CHUNK_SIZE_Z
@@ -37,6 +38,9 @@ func _process(_delta: float) -> void:
 	if is_instance_valid(_water_shore_mesh):
 		_water_shore_mesh.begin_triangles()
 
+	if is_instance_valid(_feature_manager):
+		_feature_manager.clear()
+
 	for cell in _cells:
 		if is_instance_valid(cell):
 			_triangulate_cell(cell)
@@ -53,6 +57,9 @@ func _process(_delta: float) -> void:
 		_water_mesh.commit_triangles()
 	if is_instance_valid(_water_shore_mesh):
 		_water_shore_mesh.commit_triangles()
+
+	if is_instance_valid(_feature_manager):
+		_feature_manager.apply()
 
 	set_process(false)
 
@@ -91,6 +98,8 @@ func _triangulate_cell(cell: HexCell) -> void:
 		
 		if cell.is_underwater:
 			_triangulate_water(cell, direction, center)
+
+	_feature_manager.add_feature(cell.position)
 
 func _triangulate_without_river(cell: HexCell, direction: int, center: Vector3, edge: PackedVector3Array) -> void:
 	_triangulate_fan(center, edge, cell.color)
