@@ -186,6 +186,28 @@ popup/item_1/id = 1
 popup/item_2/text = "移除"
 popup/item_2/id = 2
 
+[node name="MarginContainer7" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=2064686515]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer7" unique_id=202558313]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer7/HBoxContainer" unique_id=872318193]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "城市密度"
+
+[node name="SpinBoxUrbanLevel" type="SpinBox" parent="MarginContainer/VBoxContainer/MarginContainer7/HBoxContainer" unique_id=74003868]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 3.0
+
+[node name="CheckBoxUrbanLevel" type="CheckBox" parent="MarginContainer/VBoxContainer/MarginContainer7/HBoxContainer" unique_id=634533213]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+
 [node name="RefreshButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1925217280]
 unique_name_in_owner = true
 layout_mode = 2

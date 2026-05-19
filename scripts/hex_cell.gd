@@ -68,6 +68,13 @@ var is_underwater: bool:
 	get:
 		return water_level > elevation
 
+var urban_level: int = 0 : 
+	set(value):
+		if urban_level == value:
+			return
+		urban_level = value
+		refresh()
+
 var chunk : HexGridChunk
 
 #region 邻居海拔

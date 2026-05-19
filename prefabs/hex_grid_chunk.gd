@@ -111,7 +111,7 @@ func _triangulate_without_river(cell: HexCell, direction: int, center: Vector3, 
 
 	if not cell.is_underwater and not cell.has_road_through_edge(direction):
 		var feature_pos : Vector3 = (center + edge[0] + edge[-1]) / 3.0
-		_feature_manager.add_feature(feature_pos)
+		_feature_manager.add_feature(cell, feature_pos)
 
 #region 地形相关
 func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edge: PackedVector3Array) -> void:
@@ -359,7 +359,7 @@ func _triangulate_adjacent_to_river(cell: HexCell, direction: HexCell.HexDirecti
 
 	if not cell.is_underwater and not cell.has_road_through_edge(direction):
 		var feature_pos: Vector3 = (center + edge[0] + edge[-1]) / 3.0
-		_feature_manager.add_feature(feature_pos)
+		_feature_manager.add_feature(cell, feature_pos)
 
 func _triangulate_river_quad(vertices: PackedVector3Array, y1: float, y2: float, v_anchor: float, reversed: bool = false) -> void:
 	var vs: PackedVector3Array = vertices.duplicate()

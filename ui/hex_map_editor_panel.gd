@@ -9,6 +9,8 @@ extends MarginContainer
 @onready var refresh_button: Button = %RefreshButton
 @onready var spin_box_water: SpinBox = %SpinBoxWater
 @onready var check_box_water: CheckBox = %CheckBoxWater
+@onready var spin_box_urban_level: SpinBox = %SpinBoxUrbanLevel
+@onready var check_box_urban_level: CheckBox = %CheckBoxUrbanLevel
 
 ## 表现层：负责 UI 展示与交互输入，依赖 HexMapEditor 逻辑层的 API / signal
 @export var editor: HexMapEditor
@@ -38,6 +40,9 @@ func _ready() -> void:
 	option_button_river.select(int(editor.river_mode))
 	option_button_road.select(int(editor.road_mode))
 	_syncing_mode_ui = false
+
+	spin_box_urban_level.value = editor.active_urban_level
+	check_box_urban_level.button_pressed = editor.apply_urban_level
 
 	editor.river_mode_changed.connect(_on_editor_river_mode_changed)
 	editor.road_mode_changed.connect(_on_editor_road_mode_changed)
@@ -84,6 +89,15 @@ func _ready() -> void:
 				return
 			#editor.road_mode = index as HexMapEditor.RoadMode
 			editor.set_road_mode(index as HexMapEditor.RoadMode)
+	)
+	spin_box_urban_level.value_changed.connect(
+		func(value: float) -> void:
+			editor.set_active_urban_level(int(value))
+	)
+	check_box_urban_level.toggled.connect(
+		func(toggled_on: bool) -> void:
+			editor.set_apply_urban_level(toggled_on)
+			spin_box_urban_level.editable = toggled_on
 	)
 	refresh_button.pressed.connect(
 		func() -> void:

@@ -26,6 +26,10 @@ enum RoadMode {
 @export var road_mode: RoadMode = RoadMode.IGNORE
 @export var active_water_level := 0
 @export var disable_water_level : bool = false
+## 城镇密度等级（0～3，与 HexCell.urban_level 一致）
+@export var active_urban_level: int = 0
+## 为 true 时，笔刷点击会写入格子的城镇等级
+@export var apply_urban_level: bool = true
 
 var _previous_cell: HexCell = null
 var _is_drag: bool = false
@@ -40,6 +44,8 @@ signal river_mode_changed(mode: RiverMode)
 signal road_mode_changed(mode: RoadMode)
 signal water_level_changed(water_level: int)
 signal water_disable_chanegd()
+signal active_urban_level_changed(level: int)
+signal apply_urban_level_changed(enabled: bool)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(hex_grid):
@@ -128,6 +134,19 @@ func set_disable_water_level(disable: bool) -> void:
 	disable_water_level = disable
 	water_disable_chanegd.emit()
 
+func set_active_urban_level(level: int) -> void:
+	level = clampi(level, 0, 3)
+	if active_urban_level == level:
+		return
+	active_urban_level = level
+	active_urban_level_changed.emit(level)
+
+func set_apply_urban_level(enabled: bool) -> void:
+	if apply_urban_level == enabled:
+		return
+	apply_urban_level = enabled
+	apply_urban_level_changed.emit(enabled)
+
 func refresh() -> void:
 	hex_grid.refresh()
 
@@ -215,7 +234,9 @@ func _edit_cell(cell: HexCell, drag_center: HexCell = null) -> void:
 		cell.elevation = active_elevation
 	if not disable_water_level:
 		cell.water_level = active_water_level
-
+	if apply_urban_level:
+		cell.urban_level = active_urban_level
+	
 func _validate_drag(current_cell: HexCell) -> void:
 	_is_drag = false
 	for d in HexCell.HexDirection.values():
