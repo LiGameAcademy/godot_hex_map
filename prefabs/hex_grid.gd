@@ -7,6 +7,8 @@ class_name HexGrid
 @export var chunk_count_z := 3
 @export var noise: FastNoiseLite
 
+@export var hash_seed: int = 0
+
 var cells: Array[HexCell] = []
 var chunks: Array[HexGridChunk] = []
 
@@ -17,6 +19,7 @@ var cell_count_z: int
 
 func _ready() -> void:
 	HexMetrics.noise = noise
+	HexMetrics.initialize_hash_grid(hash_seed)
 
 	cell_count_x = chunk_count_x * HexMetrics.CHUNK_SIZE_X
 	cell_count_z = chunk_count_z * HexMetrics.CHUNK_SIZE_Z

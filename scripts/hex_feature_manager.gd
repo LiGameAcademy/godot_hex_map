@@ -18,7 +18,11 @@ func add_feature(pos: Vector3) -> void:
 	if not is_instance_valid(feature_prefab) or not is_instance_valid(_container):
 		push_error("Feature prefab or container is not set")
 		return
+	var hex_hash : HexHash = HexMetrics.sample_hash_grid(pos)
+	if hex_hash.a >= 0.5:
+		return
 	var instance: Node3D = feature_prefab.instantiate()
 	_container.add_child(instance)
 	#instance.position = pos
 	instance.position = HexMetrics.perturb(pos + Vector3(0.0, instance.scale.y * 0.5, 0.0))
+	instance.rotation.y = TAU * hex_hash.b

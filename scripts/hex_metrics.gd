@@ -55,7 +55,12 @@ const WATER_ELEVATION_OFFSET := -0.5
 const WATER_FACTOR = 0.6
 const WATER_BLEND_FACTOR = 1 - WATER_FACTOR
 
+const HASH_GRID_SIZE := 256
+const HASH_GRID_SCALE := 0.25
+
 static var noise: FastNoiseLite
+
+static var _hash_grid: Array[HexHash] = []
 
 ## 获取第一个混合角点的坐标
 static func get_first_corner(index: int) -> Vector3:
@@ -135,3 +140,22 @@ static func perturb(p: Vector3) -> Vector3:
 	q.x += noise_value.x * HexMetrics.CELL_PERTURB_STRENGTH
 	q.z += noise_value.z * HexMetrics.CELL_PERTURB_STRENGTH
 	return q
+
+static func initialize_hash_grid(seed_value: int) -> void:
+	_hash_grid.clear()
+	_hash_grid.resize(HASH_GRID_SIZE * HASH_GRID_SIZE)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	for i in range(_hash_grid.size()):
+		_hash_grid[i] = HexHash.create(rng)
+
+static func sample_hash_grid(pos: Vector3) -> HexHash:
+	var x := int(pos.x * HASH_GRID_SCALE) % HASH_GRID_SIZE
+	var z := int(pos.z * HASH_GRID_SCALE) % HASH_GRID_SIZE
+
+	if x < 0:
+		x += HASH_GRID_SIZE
+	if z < 0:
+		z += HASH_GRID_SIZE
+
+	return _hash_grid[x + z * HASH_GRID_SIZE]
