@@ -8,7 +8,25 @@
 [ext_resource type="Material" uid="uid://wnxepfjaidk" path="res://resources/materials/water_shader_material.tres" id="5_t2flr"]
 [ext_resource type="Material" uid="uid://dvf7pq0g3vb0a" path="res://resources/materials/water_shore_shader_material.tres" id="6_d2m5i"]
 [ext_resource type="Script" uid="uid://cjk3w7sh4abf7" path="res://scripts/hex_feature_manager.gd" id="8_0n84i"]
-[ext_resource type="PackedScene" uid="uid://dgy7lflqsrvrl" path="res://prefabs/feature_cube.tscn" id="9_l81wb"]
+[ext_resource type="Script" uid="uid://bxkwx7isg5sy0" path="res://scripts/hex_feature_collection.gd" id="9_r5jab"]
+[ext_resource type="PackedScene" uid="uid://dgy7lflqsrvrl" path="res://prefabs/feature_urban_1.tscn" id="9_yw55k"]
+[ext_resource type="PackedScene" uid="uid://c0j46b1vh3dri" path="res://prefabs/feature_urban_2.tscn" id="10_r5jab"]
+[ext_resource type="PackedScene" uid="uid://sqj7i0o1tg1y" path="res://prefabs/feature_urban_3.tscn" id="11_ghse4"]
+
+[sub_resource type="Resource" id="Resource_yw55k"]
+script = ExtResource("9_r5jab")
+prefabs = Array[PackedScene]([ExtResource("11_ghse4")])
+metadata/_custom_type_script = "uid://bxkwx7isg5sy0"
+
+[sub_resource type="Resource" id="Resource_r5jab"]
+script = ExtResource("9_r5jab")
+prefabs = Array[PackedScene]([ExtResource("10_r5jab")])
+metadata/_custom_type_script = "uid://bxkwx7isg5sy0"
+
+[sub_resource type="Resource" id="Resource_ghse4"]
+script = ExtResource("9_r5jab")
+prefabs = Array[PackedScene]([ExtResource("9_yw55k")])
+metadata/_custom_type_script = "uid://bxkwx7isg5sy0"
 
 [node name="HexGridChunk" type="Node3D" unique_id=258472898]
 script = ExtResource("1_p6i6p")
@@ -45,5 +63,5 @@ persistent_material = ExtResource("6_d2m5i")
 [node name="HexFeatureManager" type="Node3D" parent="." unique_id=949338551]
 unique_name_in_owner = true
 script = ExtResource("8_0n84i")
-feature_prefab = ExtResource("9_l81wb")
+urban_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_yw55k"), SubResource("Resource_r5jab"), SubResource("Resource_ghse4")])
 metadata/_custom_type_script = "uid://cjk3w7sh4abf7"

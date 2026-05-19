@@ -62,6 +62,12 @@ static var noise: FastNoiseLite
 
 static var _hash_grid: Array[HexHash] = []
 
+static var _feature_thresholds: Array[PackedFloat32Array] = [
+	PackedFloat32Array([0.0, 0.0, 0.4]),
+	PackedFloat32Array([0.0, 0.4, 0.6]),
+	PackedFloat32Array([0.4, 0.6, 0.8])
+]
+
 ## 获取第一个混合角点的坐标
 static func get_first_corner(index: int) -> Vector3:
 	return CORNERS[index]
@@ -159,3 +165,8 @@ static func sample_hash_grid(pos: Vector3) -> HexHash:
 		z += HASH_GRID_SIZE
 
 	return _hash_grid[x + z * HASH_GRID_SIZE]
+
+static func get_feature_thresholds(level: int) -> PackedFloat32Array:
+	if level > 0 and level <= _feature_thresholds.size():
+		return _feature_thresholds[level - 1]
+	return PackedFloat32Array()
