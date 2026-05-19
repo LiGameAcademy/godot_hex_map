@@ -30,6 +30,10 @@ enum RoadMode {
 @export var active_urban_level: int = 0
 ## 为 true 时，笔刷点击会写入格子的城镇等级
 @export var apply_urban_level: bool = true
+@export var active_farm_level: int = 0
+@export var apply_farm_level: bool = true
+@export var active_plant_level: int = 0
+@export var apply_plant_level: bool = true
 
 var _previous_cell: HexCell = null
 var _is_drag: bool = false
@@ -46,6 +50,10 @@ signal water_level_changed(water_level: int)
 signal water_disable_chanegd()
 signal active_urban_level_changed(level: int)
 signal apply_urban_level_changed(enabled: bool)
+signal active_farm_level_changed(level: int)
+signal apply_farm_level_changed(enabled: bool)
+signal active_plant_level_changed(level: int)
+signal apply_plant_level_changed(enabled: bool)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(hex_grid):
@@ -147,6 +155,32 @@ func set_apply_urban_level(enabled: bool) -> void:
 	apply_urban_level = enabled
 	apply_urban_level_changed.emit(enabled)
 
+func set_active_farm_level(level: int) -> void:
+	level = clampi(level, 0, 3)
+	if active_farm_level == level:
+		return
+	active_farm_level = level
+	active_farm_level_changed.emit(level)
+
+func set_apply_farm_level(enabled: bool) -> void:
+	if apply_farm_level == enabled:
+		return
+	apply_farm_level = enabled
+	apply_farm_level_changed.emit(enabled)
+
+func set_active_plant_level(level: int) -> void:
+	level = clampi(level, 0, 3)
+	if active_plant_level == level:
+		return
+	active_plant_level = level
+	active_plant_level_changed.emit(level)
+
+func set_apply_plant_level(enabled: bool) -> void:
+	if apply_plant_level == enabled:
+		return
+	apply_plant_level = enabled
+	apply_plant_level_changed.emit(enabled)
+
 func refresh() -> void:
 	hex_grid.refresh()
 
@@ -236,6 +270,10 @@ func _edit_cell(cell: HexCell, drag_center: HexCell = null) -> void:
 		cell.water_level = active_water_level
 	if apply_urban_level:
 		cell.urban_level = active_urban_level
+	if apply_farm_level:
+		cell.farm_level = active_farm_level
+	if apply_plant_level:
+		cell.plant_level = active_plant_level
 	
 func _validate_drag(current_cell: HexCell) -> void:
 	_is_drag = false

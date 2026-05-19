@@ -208,6 +208,50 @@ unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 
+[node name="MarginContainer8" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=316062927]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer8" unique_id=982330319]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer8/HBoxContainer" unique_id=314374604]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "农田密度"
+
+[node name="SpinBoxFarmLevel" type="SpinBox" parent="MarginContainer/VBoxContainer/MarginContainer8/HBoxContainer" unique_id=619429158]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 3.0
+
+[node name="CheckBoxFarmLevel" type="CheckBox" parent="MarginContainer/VBoxContainer/MarginContainer8/HBoxContainer" unique_id=670578650]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+
+[node name="MarginContainer9" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=424652250]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer9" unique_id=1589228505]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer9/HBoxContainer" unique_id=362631540]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "植被密度"
+
+[node name="SpinBoxPlantLevel" type="SpinBox" parent="MarginContainer/VBoxContainer/MarginContainer9/HBoxContainer" unique_id=1769229994]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 3.0
+
+[node name="CheckBoxPlantLevel" type="CheckBox" parent="MarginContainer/VBoxContainer/MarginContainer9/HBoxContainer" unique_id=467905500]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+
 [node name="RefreshButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1925217280]
 unique_name_in_owner = true
 layout_mode = 2

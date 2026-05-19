@@ -11,6 +11,10 @@ extends MarginContainer
 @onready var check_box_water: CheckBox = %CheckBoxWater
 @onready var spin_box_urban_level: SpinBox = %SpinBoxUrbanLevel
 @onready var check_box_urban_level: CheckBox = %CheckBoxUrbanLevel
+@onready var spin_box_farm_level: SpinBox = %SpinBoxFarmLevel
+@onready var check_box_farm_level: CheckBox = %CheckBoxFarmLevel
+@onready var spin_box_plant_level: SpinBox = %SpinBoxPlantLevel
+@onready var check_box_plant_level: CheckBox = %CheckBoxPlantLevel
 
 ## 表现层：负责 UI 展示与交互输入，依赖 HexMapEditor 逻辑层的 API / signal
 @export var editor: HexMapEditor
@@ -43,6 +47,10 @@ func _ready() -> void:
 
 	spin_box_urban_level.value = editor.active_urban_level
 	check_box_urban_level.button_pressed = editor.apply_urban_level
+	spin_box_farm_level.value = editor.active_farm_level
+	check_box_farm_level.button_pressed = editor.apply_farm_level
+	spin_box_plant_level.value = editor.active_plant_level
+	check_box_plant_level.button_pressed = editor.apply_plant_level
 
 	editor.river_mode_changed.connect(_on_editor_river_mode_changed)
 	editor.road_mode_changed.connect(_on_editor_road_mode_changed)
@@ -98,6 +106,24 @@ func _ready() -> void:
 		func(toggled_on: bool) -> void:
 			editor.set_apply_urban_level(toggled_on)
 			spin_box_urban_level.editable = toggled_on
+	)
+	spin_box_farm_level.value_changed.connect(
+		func(value: float) -> void:
+			editor.set_active_farm_level(int(value))
+	)
+	check_box_farm_level.toggled.connect(
+		func(toggled_on: bool) -> void:
+			editor.set_apply_farm_level(toggled_on)
+			spin_box_farm_level.editable = toggled_on
+	)
+	spin_box_plant_level.value_changed.connect(
+		func(value: float) -> void:
+			editor.set_active_plant_level(int(value))
+	)
+	check_box_plant_level.toggled.connect(
+		func(toggled_on: bool) -> void:
+			editor.set_apply_plant_level(toggled_on)
+			spin_box_plant_level.editable = toggled_on
 	)
 	refresh_button.pressed.connect(
 		func() -> void:

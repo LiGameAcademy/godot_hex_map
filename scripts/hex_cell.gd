@@ -74,6 +74,18 @@ var urban_level: int = 0 :
 			return
 		urban_level = value
 		refresh()
+var farm_level: int = 0:
+	set(value):
+		if farm_level == value:
+			return
+		farm_level = value
+		refresh()
+var plant_level: int = 0:
+	set(value):
+		if plant_level == value:
+			return
+		plant_level = value
+		refresh()
 
 var chunk : HexGridChunk
 
