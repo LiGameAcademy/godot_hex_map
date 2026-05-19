@@ -99,8 +99,6 @@ func _triangulate_cell(cell: HexCell) -> void:
 		if cell.is_underwater:
 			_triangulate_water(cell, direction, center)
 
-	_feature_manager.add_feature(cell.position)
-
 func _triangulate_without_river(cell: HexCell, direction: int, center: Vector3, edge: PackedVector3Array) -> void:
 	_triangulate_fan(center, edge, cell.color)
 
@@ -110,6 +108,10 @@ func _triangulate_without_river(cell: HexCell, direction: int, center: Vector3, 
 		var middle_right := center.lerp(edge[4], interpolators.y)
 		var has_road_through_edge = cell.has_road_through_edge(direction as HexCell.HexDirection)
 		_triangulate_road(center, middle_left, middle_right, edge, has_road_through_edge)
+
+	if not cell.is_underwater and not cell.has_road_through_edge(direction):
+		var feature_pos : Vector3 = (center + edge[0] + edge[-1]) / 3.0
+		_feature_manager.add_feature(feature_pos)
 
 #region 地形相关
 func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edge: PackedVector3Array) -> void:
@@ -354,6 +356,10 @@ func _triangulate_adjacent_to_river(cell: HexCell, direction: HexCell.HexDirecti
 	var ms := _make_edge(center.lerp(edge[0], 0.5), center.lerp(edge[-1], 0.5))
 	_triangulate_strip(ms, edge, cell.color, cell.color)
 	_triangulate_fan(center, ms, cell.color)
+
+	if not cell.is_underwater and not cell.has_road_through_edge(direction):
+		var feature_pos: Vector3 = (center + edge[0] + edge[-1]) / 3.0
+		_feature_manager.add_feature(feature_pos)
 
 func _triangulate_river_quad(vertices: PackedVector3Array, y1: float, y2: float, v_anchor: float, reversed: bool = false) -> void:
 	var vs: PackedVector3Array = vertices.duplicate()
