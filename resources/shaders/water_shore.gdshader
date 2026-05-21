@@ -1,6 +1,8 @@
 shader_type spatial;
 render_mode blend_mix, depth_draw_always, cull_back;
 
+#include "res://resources/shaders/water_math.gdshaderinc"
+
 uniform sampler2D _main_tex : source_color;
 uniform vec4 _color : source_color = vec4(0.2, 0.4, 0.9, 0.6);
 uniform float _metallic : hint_range(0.0, 1.0, 0.1) = 0.0;
@@ -27,23 +29,12 @@ void fragment() {
 	//
 	//float waves = (mix(noise1.z, noise2.w, blend_wave) + mix(noise1.x, noise2.y, blend_wave)) * 0.5;
 	//waves = smoothstep(0.25, 0.75, waves);
-
 	float shore = UV.y;
-	shore = sqrt(shore);
+	float foam = get_foam(shore, world_position.xz, _main_tex, TIME);
+	float waves = get_waves(world_position.xz, _main_tex, TIME);
+	waves *= (1.0 - shore);
 
-	vec2 noise_uv = world_position.xz + TIME * 0.25;
-	vec4 noise = texture(_main_tex, noise_uv * 0.015);
-	float distortion1 = noise.x * (1.0 - shore);
-	float foam1 = sin((shore + distortion1) * 10.0 - TIME);
-	foam1 *= foam1;
-
-	float distortion2 = noise.y * (1.0 - shore);
-	float foam2 = sin((shore + distortion2) * 10.0 + TIME + 2.0);
-	foam2 *= foam2 * 0.7;
-	
-	float foam = max(foam1, foam2) * shore;
-
-	vec3 c = clamp(_color.rgb + vec3(foam), 0.0, 1.0);
+	vec3 c = clamp(_color.rgb + vec3(max(foam, waves)), 0.0, 1.0);
 	float alpha = clamp(_color.a, 0.0, 1.0);
 	
 	METALLIC = _metallic;

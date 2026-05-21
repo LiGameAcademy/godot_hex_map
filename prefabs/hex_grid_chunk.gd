@@ -441,15 +441,15 @@ func _triangulate_water(cell: HexCell, direction: int, center: Vector3) -> void:
 		_triangulate_open_water(cell, direction, water_center, neighbor)
 
 func _triangulate_open_water(cell: HexCell, direction: int, water_center: Vector3, neighbor: HexCell) -> void:
-	var v1 := water_center + HexMetrics.get_first_solid_corner(direction)
-	var v2 := water_center + HexMetrics.get_second_solid_corner(direction)
+	var v1 := water_center + HexMetrics.get_first_water_corner(direction)
+	var v2 := water_center + HexMetrics.get_second_water_corner(direction)
 	_water_mesh.add_triangle([water_center, v1, v2], [Color.WHITE, Color.WHITE, Color.WHITE])
 
 	if direction > HexCell.HexDirection.SE:
 		return
 	if neighbor == null or not neighbor.is_underwater:
 		return
-	var bridge := HexMetrics.get_bridge(direction)
+	var bridge := HexMetrics.get_water_bridge(direction)
 	var e1 := v1 + bridge
 	var e2 := v2 + bridge
 	_water_mesh.add_quad([v1, v2, e1, e2], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE])
@@ -459,12 +459,12 @@ func _triangulate_open_water(cell: HexCell, direction: int, water_center: Vector
 	var next_neighbor := cell.get_neighbor(next_direction)
 	if next_neighbor == null or not next_neighbor.is_underwater:
 		return
-	_water_mesh.add_triangle([v2, e2, v2 + HexMetrics.get_bridge(next_direction)], [Color.WHITE, Color.WHITE, Color.WHITE])
+	_water_mesh.add_triangle([v2, e2, v2 + HexMetrics.get_water_bridge(next_direction)], [Color.WHITE, Color.WHITE, Color.WHITE])
 
 func _triangulate_water_shore(cell: HexCell, direction: int, center: Vector3, neighbor: HexCell) -> void:
 	var edge := _make_edge(
-		center + HexMetrics.get_first_solid_corner(direction),
-		center + HexMetrics.get_second_solid_corner(direction)
+		center + HexMetrics.get_first_water_corner(direction),
+		center + HexMetrics.get_second_water_corner(direction)
 	)
 	var colors := [Color.WHITE, Color.WHITE, Color.WHITE]
 	_water_mesh.add_triangle([center, edge[0], edge[1]], colors)
@@ -472,10 +472,13 @@ func _triangulate_water_shore(cell: HexCell, direction: int, center: Vector3, ne
 	_water_mesh.add_triangle([center, edge[2], edge[3]], colors)
 	_water_mesh.add_triangle([center, edge[3], edge[4]], colors)
 
-	var bridge := HexMetrics.get_bridge(direction)
+	var center2 := neighbor.position
+	center2.y = center.y
+	var opposite_direction := cell.opposite_direction(direction)
+	var bridge := HexMetrics.get_water_bridge(direction)
 	var edge2 := _make_edge(
-		edge[0] + bridge,
-		edge[-1] + bridge
+		center2 + HexMetrics.get_second_solid_corner(opposite_direction),
+		center2 + HexMetrics.get_first_solid_corner(opposite_direction)
 	)
 	#var colors2 := [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE]
 	var shore_uv_rect: PackedFloat32Array = [0.0, 0.0, 0.0, 1.0]
@@ -484,18 +487,24 @@ func _triangulate_water_shore(cell: HexCell, direction: int, center: Vector3, ne
 	_water_shore_mesh.add_quad_uv_rect([edge[2], edge[3], edge2[2], edge2[3]], shore_uv_rect)
 	_water_shore_mesh.add_quad_uv_rect([edge[3], edge[4], edge2[3], edge2[4]], shore_uv_rect)
 
+	#var center3 := neighbor.position
+	#center3.y = center.y
+	#var corner3 := center3 + HexMetrics.get_first_solid_corner(prev_direction)
+
+	var prev_direction := cell.previous_direction(direction)
 	var next_direction = cell.next_direction(direction)
 	var next_neighbor := cell.get_neighbor(next_direction)
 	if next_neighbor == null:
 		return
-
-	var next_bridge := HexMetrics.get_bridge(next_direction)
+	var v3 := next_neighbor.position + (HexMetrics.get_first_water_corner(prev_direction) if next_neighbor.is_underwater else HexMetrics.get_first_solid_corner(prev_direction))
+	v3.y = center.y
+	#var next_bridge := HexMetrics.get_water_bridge(next_direction)
 	var triangle_uvs : PackedVector2Array = [
 		Vector2(0.0, 0.0), 
 		Vector2(0.0, 1.0),
 		Vector2(0.0, 0.0 if next_neighbor.is_underwater else 1.0), 
 	]
-	_water_shore_mesh.add_triangle_uv([edge[4], edge2[4], edge[4] + next_bridge], triangle_uvs)
+	_water_shore_mesh.add_triangle_uv([edge[4], edge2[4], v3], triangle_uvs)
 
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
 	var colors := [color, color, color]

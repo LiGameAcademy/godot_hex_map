@@ -28,6 +28,8 @@ const CORNERS: Array[Vector3] = [
 
 const SOLID_FACTOR := 0.75
 const BLEND_FACTOR := 1.0 - SOLID_FACTOR
+const WATER_FACTOR = 0.6
+const WATER_BLEND_FACTOR = 1 - WATER_FACTOR
 
 ## 每个单位高度对应的高度偏移量
 const ELEVATION_STEP := 5.0
@@ -75,6 +77,15 @@ static func get_solid_edge_middle(index: int) -> Vector3:
 ## 获取“从内角点走到边界中点”的偏移向量，用于构建边界桥梁
 static func get_bridge(index: int) -> Vector3:
 	return (CORNERS[index] + CORNERS[index + 1]) * BLEND_FACTOR
+
+static func get_first_water_corner(index: int) -> Vector3:
+	return CORNERS[index] * WATER_FACTOR
+
+static func get_second_water_corner(index: int) -> Vector3:
+	return CORNERS[index + 1] * WATER_FACTOR	
+
+static func get_water_bridge(index: int) -> Vector3:
+	return (CORNERS[index] + CORNERS[index + 1]) * WATER_BLEND_FACTOR
 
 ## 获取台阶插值
 static func get_terrace_interpolation(a: float, b: float, step: float) -> float:
