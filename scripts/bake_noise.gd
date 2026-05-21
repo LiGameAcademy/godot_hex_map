@@ -9,7 +9,6 @@ func _run() -> void:
 	if template == null:
 		print("找不到基础噪声文件")
 		return
-
 	# 深拷贝：继承检查器里的 Seamless、尺寸、FastNoiseLite 参数等
 	var noise_tex := template.duplicate(true) as NoiseTexture2D
 	# 若只要灰度噪声进 PNG，不需要 ColorRamp 着色，可取消下一行注释：
@@ -32,20 +31,9 @@ func _run() -> void:
 		noise.seed = s
 		var img: Image
 		if noise_tex.seamless:
-			img = noise.get_seamless_image(
-				w, h,
-				noise_tex.invert,
-				noise_tex.in_3d_space,
-				noise_tex.seamless_blend_skirt,
-				noise_tex.normalize
-			)
+			img = noise.get_seamless_image(w, h, noise_tex.invert, noise_tex.in_3d_space, noise_tex.seamless_blend_skirt, noise_tex.normalize)
 		else:
-			img = noise.get_image(
-				w, h,
-				noise_tex.invert,
-				noise_tex.in_3d_space,
-				noise_tex.normalize
-			)
+			img = noise.get_image(w, h, noise_tex.invert, noise_tex.in_3d_space, noise_tex.normalize)
 		if is_instance_valid(noise_tex.color_ramp):
 			img = _apply_color_ramp(img, noise_tex.color_ramp)
 		imgs.append(img)
@@ -62,9 +50,9 @@ func _run() -> void:
 				img_r.get_pixel(x, y).r,
 				img_g.get_pixel(x, y).r,
 				img_b.get_pixel(x, y).r,
-				img_a.get_pixel(x, y).r
+				img_a.get_pixel(x, y).r,
 			))
-			
+
 	if packed_img.save_png(output_path) == OK:
 		print("RGBA 通道打包完成：", output_path)
 		EditorInterface.get_resource_filesystem().scan()
@@ -80,3 +68,12 @@ func _apply_color_ramp(src: Image, gradient: Gradient) -> Image:
 			var lum := src.get_pixel(x, y).r
 			dst.set_pixel(x, y, gradient.sample(lum))
 	return dst
+	
+	
+	
+	
+	
+	
+	
+	
+	

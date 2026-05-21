@@ -130,9 +130,9 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 	if cell.has_river_through_edge(dir_index):
 		edge[2].y = cell.stream_bed_y
 		edge2[2].y = neighbor.stream_bed_y
+		# 河流网格
 		if not cell.is_underwater:
 			if not neighbor.is_underwater:
-				# 河流网格
 				var reversed: bool = cell.has_incoming_river and cell.incoming_river == (dir_index as HexCell.HexDirection)
 				_triangulate_river_quad([edge[1], edge[3], edge2[1], edge2[3]], cell.river_surface_y, neighbor.river_surface_y, 0.8, reversed)
 			else:
@@ -334,7 +334,7 @@ func _triangulate_river_begin_or_end(cell: HexCell, _direction: int, center: Vec
 	river_center.y = cell.river_surface_y
 	var river_left := ms[1] ; var river_right := ms[3]
 	river_left.y = cell.river_surface_y ; river_right.y = cell.river_surface_y 
-	
+
 	var uvs: PackedVector2Array = [Vector2(0.5, 0.4), Vector2(0.0, 0.6), Vector2(1.0, 0.6)]
 	if reversed:
 		uvs = [Vector2(0.5, 0.4), Vector2(1.0, 0.2), Vector2(0.0, 0.2)]
