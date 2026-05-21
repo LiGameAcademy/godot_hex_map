@@ -115,8 +115,14 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 		edge[2].y = cell.stream_bed_y
 		edge2[2].y = neighbor.stream_bed_y
 		# 河流网格
-		var reversed: bool = cell.has_incoming_river and cell.incoming_river == (dir_index as HexCell.HexDirection)
-		_triangulate_river_quad([edge[1], edge[3], edge2[1], edge2[3]], cell.river_surface_y, neighbor.river_surface_y, 0.8, reversed)
+		if not cell.is_underwater:
+			if not neighbor.is_underwater:
+				var reversed: bool = cell.has_incoming_river and cell.incoming_river == (dir_index as HexCell.HexDirection)
+				_triangulate_river_quad([edge[1], edge[3], edge2[1], edge2[3]], cell.river_surface_y, neighbor.river_surface_y, 0.8, reversed)
+			else:
+				_triangulate_waterfall_in_water([edge[1], edge[3], edge2[1], edge2[3]], cell.river_surface_y, neighbor.river_surface_y, neighbor.water_surface_y)
+		elif not neighbor.is_underwater and neighbor.elevation > cell.water_level:
+			_triangulate_waterfall_in_water([edge2[1], edge2[3], edge[1], edge[3]], neighbor.river_surface_y, cell.river_surface_y, cell.water_surface_y)
 
 	var has_road := cell.has_road_through_edge(dir_index as HexCell.HexDirection)
 	if cell.get_edge_type(dir_index as HexCell.HexDirection) == HexMetrics.HexEdgeType.SLOPE:
@@ -290,6 +296,9 @@ func _triangulate_with_river(cell: HexCell, direction: int, center: Vector3, edg
 	_terrain_mesh.add_quad([center_left, center, ms[1], ms[2]], [cell.color, cell.color, cell.color, cell.color])
 	_terrain_mesh.add_quad([center, center_right, ms[2], ms[3]], [cell.color, cell.color, cell.color, cell.color])
 
+	if cell.is_underwater:
+		return
+
 	var reversed: bool = cell.incoming_river == direction
 	_triangulate_river_quad([center_left, center_right, ms[1], ms[3]], cell.river_surface_y, cell.river_surface_y, 0.4, reversed)
 	_triangulate_river_quad([ms[1], ms[3], edge[1], edge[3]], cell.river_surface_y, cell.river_surface_y, 0.6, reversed)
@@ -300,13 +309,16 @@ func _triangulate_river_begin_or_end(cell: HexCell, _direction: int, center: Vec
 	_triangulate_strip(ms, edge, cell.color, cell.color)
 	_triangulate_fan(center, ms, cell.color)
 
+	if cell.is_underwater:
+		return
+
 	var reversed: bool = cell.has_incoming_river
 	_triangulate_river_quad([ms[1], ms[3], edge[1], edge[3]], cell.river_surface_y, cell.river_surface_y, 0.6, reversed)
 	var river_center: Vector3 = center
 	river_center.y = cell.river_surface_y
 	var river_left := ms[1] ; var river_right := ms[3]
 	river_left.y = cell.river_surface_y ; river_right.y = cell.river_surface_y 
-	
+
 	var uvs: PackedVector2Array = [Vector2(0.5, 0.4), Vector2(0.0, 0.6), Vector2(1.0, 0.6)]
 	if reversed:
 		uvs = [Vector2(0.5, 0.4), Vector2(1.0, 0.2), Vector2(0.0, 0.2)]
@@ -505,6 +517,28 @@ func _triangulate_water_shore(cell: HexCell, direction: int, center: Vector3, ne
 		Vector2(0.0, 0.0 if next_neighbor.is_underwater else 1.0), 
 	]
 	_water_shore_mesh.add_triangle_uv([edge[4], edge2[4], v3], triangle_uvs)
+
+func _triangulate_waterfall_in_water(vertices: PackedVector3Array, y1: float, y2: float, water_y: float) -> void:
+	var vs : PackedVector3Array
+	for i in vertices.size():
+		var v = vertices[i]
+		v.y = y1 if i <= 1 else y2
+		vs.append(v)
+
+	# 1. 明确语义地提取四个点
+	var v_tl = HexMetrics.perturb(vs[0]) # 左上
+	var v_tr = HexMetrics.perturb(vs[1]) # 右上
+	var v_bl = HexMetrics.perturb(vs[2]) # 左下
+	var v_br = HexMetrics.perturb(vs[3]) # 右下
+
+	var t : float = clamp((water_y - y2) / (y1 - y2), 0.0, 1.0)
+
+	# 2. 垂直向上平滑移动（左边对左边，右边对右边）
+	v_bl = v_bl.lerp(v_tl, t)
+	v_br = v_br.lerp(v_tr, t)
+
+	# 3. 提交四边形时，必须严格遵守环形周长顺序：[左上, 右上, 左下, 右下]
+	_river_mesh.add_quad_uv_rect([v_tl, v_tr, v_bl, v_br], [0.0, 1.0, 0.8, 1.0], false)
 
 func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
 	var colors := [color, color, color]
