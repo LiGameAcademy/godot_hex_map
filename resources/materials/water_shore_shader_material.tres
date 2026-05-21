@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dvf7pq0g3vb0a"]
+
+[ext_resource type="Shader" uid="uid://grtiebjuaq74" path="res://resources/shaders/water_shore.gdshader" id="1_vl1es"]
+[ext_resource type="Texture2D" uid="uid://m7qoo7e26cal" path="res://resources/textures/tiling-perlin-noise.png" id="2_up7og"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_vl1es")
+shader_parameter/_main_tex = ExtResource("2_up7og")
+shader_parameter/_color = Color(0.2, 0.4, 0.9, 0.6)
+shader_parameter/_metallic = 0.0
+shader_parameter/_glossiness = 0.5
