@@ -48,11 +48,15 @@ func add_feature(cell : HexCell, pos: Vector3) -> void:
 	instance.position = HexMetrics.perturb(pos + Vector3(0.0, instance.scale.y * 0.5, 0.0))
 	instance.rotation.y = TAU * hex_hash.e
 
-func add_wall(near_edge: PackedVector3Array, near_cell: HexCell, far_edge: PackedVector3Array, far_cell: HexCell) -> void:
+func add_wall(near_edge: PackedVector3Array, near_cell: HexCell, far_edge: PackedVector3Array, far_cell: HexCell, has_river: bool, has_road: bool) -> void:
 	if near_cell.walled != far_cell.walled:
 		add_wall_segment(near_edge[0], far_edge[0], near_edge[1], far_edge[1])
-		add_wall_segment(near_edge[1], far_edge[1], near_edge[2], far_edge[2])
-		add_wall_segment(near_edge[2], far_edge[2], near_edge[3], far_edge[3])
+		if not has_river and not has_road:
+			add_wall_segment(near_edge[1], far_edge[1], near_edge[2], far_edge[2])
+			add_wall_segment(near_edge[2], far_edge[2], near_edge[3], far_edge[3])
+		else:
+			add_wall_cap(near_edge[1], far_edge[1])
+			add_wall_cap(far_edge[3], near_edge[3])
 		add_wall_segment(near_edge[3], far_edge[3], near_edge[4], far_edge[4])
 
 func add_corner_wall(cell1: HexCell, cell2: HexCell, cell3: HexCell, v1: Vector3, v2: Vector3, v3: Vector3) -> void:
@@ -109,6 +113,17 @@ func add_corner_wall_segment(
 	right: Vector3, right_cell: HexCell
 ) -> void:
 	add_wall_segment(left, pivot, right, pivot)
+
+func add_wall_cap(near: Vector3, far: Vector3) -> void:
+	near = HexMetrics.perturb(near)
+	far = HexMetrics.perturb(far)
+	var center: Vector3 = near.lerp(far, 0.5)
+	var thickness: Vector3 = HexMetrics.wall_thickness_offset(near, far)
+	var v1: Vector3 = center - thickness
+	var v2: Vector3 = center + thickness
+	var v3: Vector3 = Vector3(v1.x, center.y + HexMetrics.WALL_HEIGHT, v1.z)
+	var v4: Vector3 = Vector3(v2.x, center.y + HexMetrics.WALL_HEIGHT, v2.z)
+	walls.add_quad([v1, v2, v3, v4], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
 
 func _pick_prefab(collections: Array[HexFeatureCollection], level: int, hex_hash: float, choice: float) -> PackedScene:
 	if level <= 0 or collections.is_empty():
