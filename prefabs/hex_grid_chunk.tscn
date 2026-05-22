@@ -25,6 +25,9 @@
 [ext_resource type="PackedScene" uid="uid://bcwiosande4bt" path="res://prefabs/feature_plant_1_1.tscn" id="23_0rsd2"]
 [ext_resource type="PackedScene" uid="uid://ctal2ve1tfow0" path="res://prefabs/feature_plant_1_2.tscn" id="24_w80y4"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rs67w"]
+albedo_color = Color(1, 0, 0.02745098, 1)
+
 [sub_resource type="Resource" id="Resource_yw55k"]
 script = ExtResource("9_r5jab")
 prefabs = Array[PackedScene]([ExtResource("11_ghse4")])
@@ -102,9 +105,14 @@ unique_name_in_owner = true
 cast_shadow = 0
 persistent_material = ExtResource("6_d2m5i")
 
-[node name="HexFeatureManager" type="Node3D" parent="." unique_id=949338551]
+[node name="Walls" parent="." unique_id=1995495850 instance=ExtResource("2_p6i6p")]
+unique_name_in_owner = true
+persistent_material = SubResource("StandardMaterial3D_rs67w")
+
+[node name="HexFeatureManager" type="Node3D" parent="." unique_id=949338551 node_paths=PackedStringArray("walls")]
 unique_name_in_owner = true
 script = ExtResource("8_0n84i")
 urban_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_yw55k"), SubResource("Resource_r5jab"), SubResource("Resource_ghse4")])
 farm_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_1oov6"), SubResource("Resource_1tkxl"), SubResource("Resource_1wyod")])
 plant_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_kw6gc"), SubResource("Resource_wuyba"), SubResource("Resource_adhk7")])
+walls = NodePath("../Walls")

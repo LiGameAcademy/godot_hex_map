@@ -58,6 +58,9 @@ const WATER_ELEVATION_OFFSET := -0.5
 const HASH_GRID_SIZE := 256
 const HASH_GRID_SCALE := 0.25
 
+const WALL_HEIGHT: float = 3.0
+const WALL_THICKNESS: float = 0.75
+
 static var noise: FastNoiseLite
 
 static var _hash_grid: Array[HexHash] = []
@@ -170,3 +173,8 @@ static func get_feature_thresholds(level: int) -> PackedFloat32Array:
 	if level > 0 and level <= _feature_thresholds.size():
 		return _feature_thresholds[level - 1]
 	return PackedFloat32Array()
+
+static func wall_thickness_offset(near: Vector3, far: Vector3) -> Vector3:
+	var offset: Vector3 = far - near
+	offset.y = 0.0
+	return offset.normalized() * (WALL_THICKNESS * 0.5)

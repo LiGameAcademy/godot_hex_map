@@ -146,6 +146,9 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 	else:
 		_triangulate_strip(edge, edge2, cell.color, neighbor.color, has_road)
 	
+	# 添加城墙
+	_feature_manager.add_wall(edge, cell, edge2, neighbor)
+	
 	var next_dir := cell.next_direction(dir_index)
 	var next_neighbor = cell.get_neighbor(next_dir)
 	if is_instance_valid(next_neighbor) and dir_index < HexCell.HexDirection.SE:
