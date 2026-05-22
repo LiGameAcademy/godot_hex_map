@@ -10,5 +10,4 @@ shader_parameter/_main_tex = ExtResource("2_ghcn0")
 shader_parameter/_color = Color(0.2, 0.4, 0.9, 0.6)
 shader_parameter/_metallic = 0.0
 shader_parameter/_glossiness = 0.5
-shader_parameter/flow_speed = 0.10000000475
 shader_parameter/highlight_strength = 0.9610000456475

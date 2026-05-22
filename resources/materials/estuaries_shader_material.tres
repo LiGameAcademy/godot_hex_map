@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://dvspx2lgf77r4"]
 
-[ext_resource type="Shader" uid="uid://dfqf83tbvgs7b" path="res://resources/shaders/estuaries.gdshader" id="1_rrtmf"]
+[ext_resource type="Shader" path="res://resources/shaders/estuaries.gdshader" id="1_rrtmf"]
 [ext_resource type="Texture2D" uid="uid://keutoldn7dgo" path="res://resources/textures/tiling-perlin-noise.png" id="2_jtvd0"]
 
 [resource]
