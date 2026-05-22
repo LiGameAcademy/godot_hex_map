@@ -50,31 +50,65 @@ func add_feature(cell : HexCell, pos: Vector3) -> void:
 
 func add_wall(near_edge: PackedVector3Array, near_cell: HexCell, far_edge: PackedVector3Array, far_cell: HexCell) -> void:
 	if near_cell.walled != far_cell.walled:
-		add_wall_segment(near_edge[0], far_edge[0], near_edge[4], far_edge[4])
+		add_wall_segment(near_edge[0], far_edge[0], near_edge[1], far_edge[1])
+		add_wall_segment(near_edge[1], far_edge[1], near_edge[2], far_edge[2])
+		add_wall_segment(near_edge[2], far_edge[2], near_edge[3], far_edge[3])
+		add_wall_segment(near_edge[3], far_edge[3], near_edge[4], far_edge[4])
+
+func add_corner_wall(cell1: HexCell, cell2: HexCell, cell3: HexCell, v1: Vector3, v2: Vector3, v3: Vector3) -> void:
+	if cell1.walled:
+		if cell2.walled:
+			if not cell3.walled:
+				add_corner_wall_segment(v3, cell3, v2, cell2, v1, cell1)
+		elif cell3.walled:
+			add_corner_wall_segment(v2, cell2, v1, cell1, v3, cell3)
+		else:
+			add_corner_wall_segment(v1, cell1, v3, cell3, v2, cell2)
+	elif cell2.walled:
+		if cell3.walled:
+			add_corner_wall_segment(v1, cell1, v3, cell3, v2, cell2)
+		else:
+			add_corner_wall_segment(v2, cell2, v1, cell1, v3, cell3)
+	elif cell3.walled:
+		add_corner_wall_segment(v3, cell3, v2, cell2, v1, cell1)
 
 func add_wall_segment(near_left: Vector3, far_left: Vector3, near_right: Vector3,far_right: Vector3) -> void:
-	var left := near_left.lerp(far_left, 0.5)
-	var right := near_right.lerp(far_right, 0.5)
+	near_left = HexMetrics.perturb(near_left)
+	far_left = HexMetrics.perturb(far_left)
+	near_right = HexMetrics.perturb(near_right)
+	far_right = HexMetrics.perturb(far_right)
 
-	var wall_top_y := left.y + HexMetrics.WALL_HEIGHT
+	var left := HexMetrics.wall_lerp(near_left, far_left)
+	var right := HexMetrics.wall_lerp(near_right, far_right)
+
+	#var wall_top_y := left.y + HexMetrics.WALL_HEIGHT
+	var left_top_y := left.y + HexMetrics.WALL_HEIGHT
+	var right_top_y := right.y + HexMetrics.WALL_HEIGHT
 
 	var left_thickness_offset := HexMetrics.wall_thickness_offset(near_left, far_left)
 	var right_thickness_offset := HexMetrics.wall_thickness_offset(near_right, far_right)
 
 	var v1 := left - left_thickness_offset
 	var v2 := right - right_thickness_offset
-	var v3 := v1; v3.y = wall_top_y
-	var v4 := v2; v4.y = wall_top_y
-	walls.add_quad([v1, v2, v3, v4], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE])
+	var v3 := v1; v3.y = left_top_y
+	var v4 := v2; v4.y = right_top_y
+	walls.add_quad([v1, v2, v3, v4], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
 	var t1 := v3; var t2 := v4
 	
 	v1 = left + left_thickness_offset
 	v2 = right + right_thickness_offset
-	v3 = v1; v3.y = wall_top_y
-	v4 = v2; v4.y = wall_top_y
-	walls.add_quad([v2, v1, v4, v3], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE])
+	v3 = v1; v3.y = left_top_y
+	v4 = v2; v4.y = right_top_y
+	walls.add_quad([v2, v1, v4, v3], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
 
-	walls.add_quad([t1, t2, v3, v4], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE])
+	walls.add_quad([t1, t2, v3, v4], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
+
+func add_corner_wall_segment(
+	pivot: Vector3, pivot_cell: HexCell,
+	left: Vector3, left_cell: HexCell,
+	right: Vector3, right_cell: HexCell
+) -> void:
+	add_wall_segment(left, pivot, right, pivot)
 
 func _pick_prefab(collections: Array[HexFeatureCollection], level: int, hex_hash: float, choice: float) -> PackedScene:
 	if level <= 0 or collections.is_empty():

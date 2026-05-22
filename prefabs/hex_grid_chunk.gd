@@ -208,6 +208,11 @@ func _triangulate_corner(
 		# 涵盖了我们尚未讨论过的所有剩余情况，包括 FFF、CCF、CCCR 和 CCCL。它们都用一个三角形表示
 		_terrain_mesh.add_triangle([bottom_v, left_v, right_v], [bottom_cell.color, left_cell.color, right_cell.color])
 
+	_feature_manager.add_corner_wall(
+		bottom_cell, left_cell, right_cell,
+		bottom_v, left_v, right_v
+	)
+
 func _triangulate_corner_terraces(
 		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
 		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:

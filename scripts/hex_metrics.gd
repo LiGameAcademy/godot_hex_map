@@ -60,6 +60,7 @@ const HASH_GRID_SCALE := 0.25
 
 const WALL_HEIGHT: float = 3.0
 const WALL_THICKNESS: float = 0.75
+const WALL_ELEVATION_OFFSET: float = VERTICAL_TERRACE_STEP_SIZE
 
 static var noise: FastNoiseLite
 
@@ -178,3 +179,10 @@ static func wall_thickness_offset(near: Vector3, far: Vector3) -> Vector3:
 	var offset: Vector3 = far - near
 	offset.y = 0.0
 	return offset.normalized() * (WALL_THICKNESS * 0.5)
+
+static func wall_lerp(near: Vector3, far: Vector3) -> Vector3:
+	near.x += (far.x - near.x) * 0.5
+	near.z += (far.z - near.z) * 0.5
+	var v := WALL_ELEVATION_OFFSET if near.y < far.y else (1.0 - WALL_ELEVATION_OFFSET)
+	near.y += (far.y - near.y) * v
+	return near
