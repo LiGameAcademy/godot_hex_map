@@ -50,6 +50,10 @@ func add_feature(cell : HexCell, pos: Vector3) -> void:
 
 func add_wall(near_edge: PackedVector3Array, near_cell: HexCell, far_edge: PackedVector3Array, far_cell: HexCell, has_river: bool, has_road: bool) -> void:
 	if near_cell.walled != far_cell.walled:
+		if near_cell.is_underwater or far_cell.is_underwater:
+			return
+		if near_cell.get_edge_type_by_cell(far_cell) == HexMetrics.HexEdgeType.CLIFF:
+			return
 		add_wall_segment(near_edge[0], far_edge[0], near_edge[1], far_edge[1])
 		if not has_river and not has_road:
 			add_wall_segment(near_edge[1], far_edge[1], near_edge[2], far_edge[2])
@@ -112,7 +116,22 @@ func add_corner_wall_segment(
 	left: Vector3, left_cell: HexCell,
 	right: Vector3, right_cell: HexCell
 ) -> void:
-	add_wall_segment(left, pivot, right, pivot)
+	if pivot_cell.is_underwater:
+		return
+	var has_left_wall := not left_cell.is_underwater and pivot_cell.get_edge_type_by_cell(left_cell) != HexMetrics.HexEdgeType.CLIFF
+	var has_right_wall := not right_cell.is_underwater and pivot_cell.get_edge_type_by_cell(right_cell) != HexMetrics.HexEdgeType.CLIFF
+	if has_left_wall:
+		if has_right_wall:
+			add_wall_segment(left, pivot, right, pivot)
+		elif left_cell.elevation < right_cell.elevation:
+			add_wall_wedge(pivot, left, right)
+		else:
+			add_wall_cap(left, pivot)
+	elif has_right_wall:
+		if right_cell.elevation < left_cell.elevation:
+			add_wall_wedge(right, pivot, left)
+		else:
+			add_wall_cap(pivot, right)
 
 func add_wall_cap(near: Vector3, far: Vector3) -> void:
 	near = HexMetrics.perturb(near)
@@ -124,6 +143,26 @@ func add_wall_cap(near: Vector3, far: Vector3) -> void:
 	var v3: Vector3 = Vector3(v1.x, center.y + HexMetrics.WALL_HEIGHT, v1.z)
 	var v4: Vector3 = Vector3(v2.x, center.y + HexMetrics.WALL_HEIGHT, v2.z)
 	walls.add_quad([v1, v2, v3, v4], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
+
+func add_wall_wedge(near: Vector3, far: Vector3, point: Vector3) -> void:
+	near = HexMetrics.perturb(near)
+	far = HexMetrics.perturb(far)
+	point = HexMetrics.perturb(point)
+
+	var center: Vector3 = HexMetrics.wall_lerp(near, far)
+	var thickness: Vector3 = HexMetrics.wall_thickness_offset(near, far)
+	var point_top := point
+	point.y = center.y
+
+	var v1: Vector3 = center - thickness
+	var v2: Vector3 = center + thickness
+	var v3: Vector3 = v1; var v4: Vector3 = v2
+	point_top.y = center.y + HexMetrics.WALL_HEIGHT
+	v3.y = point_top.y; v4.y = point_top.y
+
+	walls.add_quad([v3, point_top, v1, point], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
+	walls.add_quad([v2, point, v4, point_top], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
+	walls.add_triangle([v3, point_top, v4], [Color.WHITE, Color.WHITE, Color.WHITE], false)
 
 func _pick_prefab(collections: Array[HexFeatureCollection], level: int, hex_hash: float, choice: float) -> PackedScene:
 	if level <= 0 or collections.is_empty():
