@@ -87,6 +87,13 @@ var plant_level: int = 0:
 		plant_level = value
 		refresh()
 
+var walled: bool = false:
+	set(value):
+		if walled == value:
+			return
+		walled = value
+		refresh()
+
 var chunk : HexGridChunk
 
 #region 邻居海拔

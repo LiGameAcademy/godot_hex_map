@@ -8,7 +8,7 @@
 [ext_resource type="Material" uid="uid://wnxepfjaidk" path="res://resources/materials/water_shader_material.tres" id="5_t2flr"]
 [ext_resource type="Material" uid="uid://dvf7pq0g3vb0a" path="res://resources/materials/water_shore_shader_material.tres" id="6_d2m5i"]
 [ext_resource type="Script" uid="uid://cjk3w7sh4abf7" path="res://scripts/hex_feature_manager.gd" id="8_0n84i"]
-[ext_resource type="Script" uid="uid://bxkwx7isg5sy0" path="res://scripts/hex_feature_collection.gd" id="9_r5jab"]
+[ext_resource type="Script" path="res://scripts/hex_feature_collection.gd" id="9_r5jab"]
 [ext_resource type="PackedScene" uid="uid://dgy7lflqsrvrl" path="res://prefabs/feature_urban_1.tscn" id="9_yw55k"]
 [ext_resource type="PackedScene" uid="uid://c0j46b1vh3dri" path="res://prefabs/feature_urban_2.tscn" id="10_r5jab"]
 [ext_resource type="PackedScene" uid="uid://sqj7i0o1tg1y" path="res://prefabs/feature_urban_3.tscn" id="11_ghse4"]
@@ -108,4 +108,3 @@ script = ExtResource("8_0n84i")
 urban_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_yw55k"), SubResource("Resource_r5jab"), SubResource("Resource_ghse4")])
 farm_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_1oov6"), SubResource("Resource_1tkxl"), SubResource("Resource_1wyod")])
 plant_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_kw6gc"), SubResource("Resource_wuyba"), SubResource("Resource_adhk7")])
-metadata/_custom_type_script = "uid://cjk3w7sh4abf7"

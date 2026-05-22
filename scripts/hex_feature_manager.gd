@@ -21,32 +21,19 @@ func add_feature(cell : HexCell, pos: Vector3) -> void:
 		push_error("Container is not set")
 		return
 	var hex_hash : HexHash = HexMetrics.sample_hash_grid(pos)
-	#if hex_hash.a >= cell.urban_level * 0.25:
-		#return
-	#if cell.urban_level <= 0 or cell.urban_level  > urban_prefabs.size():
-		#push_error("cell urban level <= 0 or cell urban level > urban_prefabs size!")
-		#return
+	# 城市
 	var prefab : PackedScene = _pick_prefab(urban_collections, cell.urban_level, hex_hash.a, hex_hash.d)
+	var score : float = hex_hash.a / float(cell.urban_level)
+	# 农田
+	if hex_hash.b / float(cell.farm_level) < score:
+		score = hex_hash.b / float(cell.farm_level)
+		prefab = _pick_prefab(farm_collections, cell.farm_level, hex_hash.b, hex_hash.d)
+	# 植物
+	if hex_hash.c / float(cell.plant_level) < score:
+		score = hex_hash.c / float(cell.plant_level)
+		prefab = _pick_prefab(plant_collections, cell.plant_level, hex_hash.b, hex_hash.d)
+		
 	if not is_instance_valid(prefab):
-		return
-	var used_hash: float = hex_hash.a
-	var other: PackedScene = _pick_prefab(farm_collections, cell.farm_level, hex_hash.b, hex_hash.d)
-	if not is_instance_valid(other):
-		return
-	if is_instance_valid(prefab):
-		if is_instance_valid(other) and hex_hash.b < used_hash:
-			prefab = other
-			used_hash = hex_hash.b
-	elif is_instance_valid(other):
-		prefab = other
-		used_hash = hex_hash.b
-	other = _pick_prefab(plant_collections, cell.plant_level, hex_hash.c, hex_hash.d)
-	if is_instance_valid(prefab):
-		if is_instance_valid(other) and hex_hash.c < used_hash:
-			prefab = other
-	elif is_instance_valid(other):
-		prefab = other
-	else:
 		return
 
 	var instance: Node3D = prefab.instantiate()
@@ -55,12 +42,11 @@ func add_feature(cell : HexCell, pos: Vector3) -> void:
 	instance.rotation.y = TAU * hex_hash.e
 
 func _pick_prefab(collections: Array[HexFeatureCollection], level: int, hex_hash: float, choice: float) -> PackedScene:
-	if level <= 0:
-		return null
-	if urban_collections.is_empty():
-		push_error("urban_collections is empty")
+	if level <= 0 or collections.is_empty():
 		return null
 	var thresholds := HexMetrics.get_feature_thresholds(level)
+	if thresholds.is_empty():
+		return null
 	if collections.size() != thresholds.size():
 		push_error(
 			"collections size (%d) must match thresholds size (%d) for level %d"

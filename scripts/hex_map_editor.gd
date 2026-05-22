@@ -7,7 +7,11 @@ enum RoadMode {
 	ADD, 		## 添加
 	REMOVE,		## 移除
 }
-
+enum WalledMode { 
+	IGNORE,		## 忽略
+	ADD, 		## 添加
+	REMOVE,		## 移除
+}
 @export var hex_grid: HexGrid
 # 可以在编辑器中编辑颜色
 @export var colors : Dictionary[StringName, Color] = {
@@ -34,6 +38,7 @@ enum RoadMode {
 @export var apply_farm_level: bool = true
 @export var active_plant_level: int = 0
 @export var apply_plant_level: bool = true
+@export var walled_mode: WalledMode = WalledMode.IGNORE
 
 var _previous_cell: HexCell = null
 var _is_drag: bool = false
@@ -54,6 +59,7 @@ signal active_farm_level_changed(level: int)
 signal apply_farm_level_changed(enabled: bool)
 signal active_plant_level_changed(level: int)
 signal apply_plant_level_changed(enabled: bool)
+signal walled_mode_changed(mode: WalledMode)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(hex_grid):
@@ -181,6 +187,13 @@ func set_apply_plant_level(enabled: bool) -> void:
 	apply_plant_level = enabled
 	apply_plant_level_changed.emit(enabled)
 
+func set_walled_mode(mode: int) -> void:
+	var m := clampi(mode, 0, 2) as WalledMode
+	if walled_mode == m:
+		return
+	walled_mode = m
+	walled_mode_changed.emit(walled_mode)
+
 func refresh() -> void:
 	hex_grid.refresh()
 
@@ -274,7 +287,10 @@ func _edit_cell(cell: HexCell, drag_center: HexCell = null) -> void:
 		cell.farm_level = active_farm_level
 	if apply_plant_level:
 		cell.plant_level = active_plant_level
-	
+
+	if walled_mode != WalledMode.IGNORE:
+		cell.walled = walled_mode == WalledMode.ADD
+
 func _validate_drag(current_cell: HexCell) -> void:
 	_is_drag = false
 	for d in HexCell.HexDirection.values():
