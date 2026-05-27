@@ -236,6 +236,7 @@ func save_map() -> void:
 	if file == null:
 		push_error("Failed to open file for writing: ", path)
 		return
+	file.store_32(0)  # 格式版本 0
 	hex_grid.save(file)
 	file.close()
 
@@ -249,8 +250,12 @@ func load_map() -> void:
 	if file == null:
 		push_error("Failed to open file for reading")
 		return
-
-	hex_grid.load(file)
+	
+	var header := file.get_32()
+	if header == 0:
+		hex_grid.load(file)
+	else:
+		push_warning("Unknown map format: ", header)
 	file.close()
 
 func _handle_click_or_drag(mouse_pos: Vector2, from_motion: bool = false) -> void:

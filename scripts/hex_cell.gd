@@ -316,15 +316,23 @@ func save(file: FileAccess) -> void:
 	file.store_8(farm_level)
 	file.store_8(plant_level)
 	file.store_8(special_index)
+	
+	file.store_8(walled)
 
-	file.store_8(1 if walled else 0)
-	file.store_8(1 if has_incoming_river else 0)
-	file.store_8(incoming_river as int if has_incoming_river else 0)
-	file.store_8(1 if has_outgoing_river else 0)
-	file.store_8(outgoing_river as int if has_outgoing_river else 0)
+	var river_data := 0
+	if has_incoming_river:
+		river_data = 0x80 | int(incoming_river)
+	file.store_8(river_data)
+	river_data = 0
+	if has_outgoing_river:
+		river_data = 0x80 | int(outgoing_river)
+	file.store_8(river_data)
 
+	var road_flags := 0
 	for i in range(roads.size()):
-		file.store_8(1 if roads[i] else 0)
+		if roads[i] != 0:
+			road_flags |= (1 << i)
+	file.store_8(road_flags)
 
 func load(file: FileAccess) -> void:
 	terrain_type_index = file.get_8()
@@ -336,16 +344,22 @@ func load(file: FileAccess) -> void:
 	special_index = file.get_8()
 
 	walled = file.get_8() == 1
-	has_incoming_river = file.get_8() == 1
-	var incoming_dir := file.get_8()
-	if has_incoming_river:
-		incoming_river = incoming_dir as HexCell.HexDirection
-	has_outgoing_river = file.get_8() == 1
-	var outgoing_dir := file.get_8()
-	if has_outgoing_river:
-		outgoing_river = outgoing_dir as HexCell.HexDirection
+	var river_data := file.get_8()
+	if (river_data & 0x80) != 0:
+		has_incoming_river = true
+		incoming_river = (river_data & 0x7F) as HexCell.HexDirection
+	else:
+		has_incoming_river = false
+	river_data = file.get_8()
+	if (river_data & 0x80) != 0:
+		has_outgoing_river = true
+		outgoing_river = (river_data & 0x7F) as HexCell.HexDirection
+	else:
+		has_outgoing_river = false
+
+	var road_flags := file.get_8()
 	for i in range(roads.size()):
-		roads[i] = file.get_8()
+		roads[i] = 1 if (road_flags & (1 << i)) != 0 else 0
 
 func _validate_river_constraints() -> void:
 	if has_outgoing_river and not is_valid_river_destination(get_neighbor(outgoing_river)):
