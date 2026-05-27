@@ -308,6 +308,45 @@ func is_valid_river_destination(neighbor: HexCell) -> bool:
 func refresh() -> void:
 	_refresh()
 
+func save(file: FileAccess) -> void:
+	file.store_8(terrain_type_index)
+	file.store_8(elevation + 128)
+	file.store_8(water_level + 128)
+	file.store_8(urban_level)
+	file.store_8(farm_level)
+	file.store_8(plant_level)
+	file.store_8(special_index)
+
+	file.store_8(1 if walled else 0)
+	file.store_8(1 if has_incoming_river else 0)
+	file.store_8(incoming_river as int if has_incoming_river else 0)
+	file.store_8(1 if has_outgoing_river else 0)
+	file.store_8(outgoing_river as int if has_outgoing_river else 0)
+
+	for i in range(roads.size()):
+		file.store_8(1 if roads[i] else 0)
+
+func load(file: FileAccess) -> void:
+	terrain_type_index = file.get_8()
+	elevation = clampi(file.get_8() - 128, -128, 127)
+	water_level = clampi(file.get_8() - 128, -128, 127)
+	urban_level = file.get_8()
+	farm_level = file.get_8()
+	plant_level = file.get_8()
+	special_index = file.get_8()
+
+	walled = file.get_8() == 1
+	has_incoming_river = file.get_8() == 1
+	var incoming_dir := file.get_8()
+	if has_incoming_river:
+		incoming_river = incoming_dir as HexCell.HexDirection
+	has_outgoing_river = file.get_8() == 1
+	var outgoing_dir := file.get_8()
+	if has_outgoing_river:
+		outgoing_river = outgoing_dir as HexCell.HexDirection
+	for i in range(roads.size()):
+		roads[i] = file.get_8()
+
 func _validate_river_constraints() -> void:
 	if has_outgoing_river and not is_valid_river_destination(get_neighbor(outgoing_river)):
 		remove_outgoing_river()

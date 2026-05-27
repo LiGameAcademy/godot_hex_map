@@ -20,6 +20,8 @@ extends MarginContainer
 @onready var option_button_walled: OptionButton = %OptionButtonWalled
 @onready var spin_box_special: SpinBox = %SpinBoxSpecial
 @onready var check_box_special: CheckBox = %CheckBoxSpecial
+@onready var button_load: Button = %ButtonLoad
+@onready var button_save: Button = %ButtonSave
 
 ## 表现层：负责 UI 展示与交互输入，依赖 HexMapEditor 逻辑层的 API / signal
 @export var editor: HexMapEditor
@@ -159,10 +161,9 @@ func _ready() -> void:
 			editor.set_apply_special_index(toggled_on)
 			spin_box_special.editable = toggled_on
 	)
-	refresh_button.pressed.connect(
-		func() -> void:
-			editor.refresh()
-	)
+	refresh_button.pressed.connect(func() -> void:editor.refresh())
+	button_save.pressed.connect(func() -> void:editor.save_map())
+	button_load.pressed.connect(func() -> void: editor.load_map()) 
 
 func _on_editor_river_mode_changed(_mode: HexMapEditor.RiverMode) -> void:
 	if not is_instance_valid(editor):

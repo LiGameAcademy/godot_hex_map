@@ -230,6 +230,29 @@ func set_apply_special_index(enabled : bool) -> void:
 func refresh() -> void:
 	hex_grid.refresh()
 
+func save_map() -> void:
+	var path := "user://test.map"
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		push_error("Failed to open file for writing: ", path)
+		return
+	hex_grid.save(file)
+	file.close()
+
+func load_map() -> void:
+	var path := "user://test.map"
+	if not FileAccess.file_exists(path):
+		push_warning("Map file not found: ", path)
+		return
+
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		push_error("Failed to open file for reading")
+		return
+
+	hex_grid.load(file)
+	file.close()
+
 func _handle_click_or_drag(mouse_pos: Vector2, from_motion: bool = false) -> void:
 	var camera := get_viewport().get_camera_3d()
 	if not is_instance_valid(camera):

@@ -41,6 +41,15 @@ func refresh() -> void:
 	for chunk in chunks:
 		chunk.refresh()
 
+func save(file: FileAccess) -> void:
+	for cell in cells:
+		cell.save(file)
+
+func load(file: FileAccess) -> void:
+	for cell in cells:
+		cell.load(file)
+	refresh()
+
 func _create_chunks() -> void:
 	chunks.resize(chunk_count_x * chunk_count_z)
 	for z in chunk_count_z:

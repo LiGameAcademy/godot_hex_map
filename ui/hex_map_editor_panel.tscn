@@ -300,3 +300,21 @@ layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 5
 text = "刷新"
+
+[node name="MarginContainer12" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=534548673]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer12" unique_id=1933838553]
+layout_mode = 2
+
+[node name="ButtonLoad" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer12/HBoxContainer" unique_id=2144290428]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "加载"
+
+[node name="ButtonSave" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer12/HBoxContainer" unique_id=134061576]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "保存"
