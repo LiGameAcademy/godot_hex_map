@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://ihpfsuf11e5d"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_iao2c"]
+size = Vector3(2, 4, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cu67v"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cu67v"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sdphn"]
+albedo_color = Color(1, 0, 0, 1)
+
+[node name="WallTower" type="Node3D" unique_id=1923058875]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1194550800]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("BoxMesh_iao2c")
+surface_material_override/0 = SubResource("StandardMaterial3D_cu67v")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="MeshInstance3D" unique_id=1502722458]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+mesh = SubResource("BoxMesh_cu67v")
+surface_material_override/0 = SubResource("StandardMaterial3D_sdphn")

@@ -39,6 +39,8 @@ enum WalledMode {
 @export var active_plant_level: int = 0
 @export var apply_plant_level: bool = true
 @export var walled_mode: WalledMode = WalledMode.IGNORE
+@export var active_special_index: int = 0
+@export var apply_special_index: bool = true
 
 var _previous_cell: HexCell = null
 var _is_drag: bool = false
@@ -60,6 +62,8 @@ signal apply_farm_level_changed(enabled: bool)
 signal active_plant_level_changed(level: int)
 signal apply_plant_level_changed(enabled: bool)
 signal walled_mode_changed(mode: WalledMode)
+signal active_special_index_changed(index: int)
+signal apply_special_index_changed(enabled: bool)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(hex_grid):
@@ -194,6 +198,19 @@ func set_walled_mode(mode: int) -> void:
 	walled_mode = m
 	walled_mode_changed.emit(walled_mode)
 
+func set_active_special_index(index: int) -> void:
+	index = clampi(index, 0, 3)
+	if active_special_index == index:
+		return
+	active_special_index = index
+	active_special_index_changed.emit(index)
+
+func set_apply_special_index(enabled : bool) -> void:
+	if apply_special_index == enabled:
+		return
+	apply_special_index = enabled
+	apply_special_index_changed.emit(enabled)
+
 func refresh() -> void:
 	hex_grid.refresh()
 
@@ -290,6 +307,9 @@ func _edit_cell(cell: HexCell, drag_center: HexCell = null) -> void:
 
 	if walled_mode != WalledMode.IGNORE:
 		cell.walled = walled_mode == WalledMode.ADD
+
+	if apply_special_index:
+		cell.special_index = active_special_index
 
 func _validate_drag(current_cell: HexCell) -> void:
 	_is_drag = false

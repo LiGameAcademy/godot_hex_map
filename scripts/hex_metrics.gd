@@ -59,8 +59,13 @@ const HASH_GRID_SIZE := 256
 const HASH_GRID_SCALE := 0.25
 
 const WALL_HEIGHT: float = 3.0
+const WALL_Y_OFFSET: float = -1.0
 const WALL_THICKNESS: float = 0.75
 const WALL_ELEVATION_OFFSET: float = VERTICAL_TERRACE_STEP_SIZE
+
+const WALL_TOWER_THRESHOLD: float = 0.5
+
+const BRIDGE_DESIGN_LENGTH: float = 7.0
 
 static var noise: FastNoiseLite
 
@@ -184,5 +189,5 @@ static func wall_lerp(near: Vector3, far: Vector3) -> Vector3:
 	near.x += (far.x - near.x) * 0.5
 	near.z += (far.z - near.z) * 0.5
 	var v := WALL_ELEVATION_OFFSET if near.y < far.y else (1.0 - WALL_ELEVATION_OFFSET)
-	near.y += (far.y - near.y) * v
+	near.y = lerpf(near.y, far.y, v) + WALL_Y_OFFSET
 	return near

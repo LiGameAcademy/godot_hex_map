@@ -277,6 +277,28 @@ popup/item_1/id = 1
 popup/item_2/text = "移除"
 popup/item_2/id = 2
 
+[node name="MarginContainer11" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=1696095045]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer11" unique_id=1377463266]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer11/HBoxContainer" unique_id=1863139327]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "特殊特征"
+
+[node name="SpinBoxSpecial" type="SpinBox" parent="MarginContainer/VBoxContainer/MarginContainer11/HBoxContainer" unique_id=1414800848]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 4.0
+
+[node name="CheckBoxSpecial" type="CheckBox" parent="MarginContainer/VBoxContainer/MarginContainer11/HBoxContainer" unique_id=124985771]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+
 [node name="RefreshButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1925217280]
 unique_name_in_owner = true
 layout_mode = 2

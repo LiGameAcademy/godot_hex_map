@@ -24,6 +24,11 @@
 [ext_resource type="PackedScene" uid="uid://bfyo7fvpwwhlw" path="res://prefabs/feature_plant_2_2.tscn" id="22_p0xkr"]
 [ext_resource type="PackedScene" uid="uid://bcwiosande4bt" path="res://prefabs/feature_plant_1_1.tscn" id="23_0rsd2"]
 [ext_resource type="PackedScene" uid="uid://ctal2ve1tfow0" path="res://prefabs/feature_plant_1_2.tscn" id="24_w80y4"]
+[ext_resource type="PackedScene" uid="uid://ihpfsuf11e5d" path="res://prefabs/wall_tower.tscn" id="25_b0gs1"]
+[ext_resource type="PackedScene" uid="uid://dh1tr75j5iygr" path="res://prefabs/bridge.tscn" id="26_4k7ks"]
+[ext_resource type="PackedScene" uid="uid://bgdpf1312bhe0" path="res://prefabs/castle.tscn" id="27_w80y4"]
+[ext_resource type="PackedScene" uid="uid://dtbjptjss7sfk" path="res://prefabs/ziggurat.tscn" id="28_kw6gc"]
+[ext_resource type="PackedScene" uid="uid://0swtgveeb6sx" path="res://prefabs/megaflora.tscn" id="29_wuyba"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rs67w"]
 albedo_color = Color(1, 0, 0.02745098, 1)
@@ -116,3 +121,6 @@ urban_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_yw55k")
 farm_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_1oov6"), SubResource("Resource_1tkxl"), SubResource("Resource_1wyod")])
 plant_collections = Array[ExtResource("9_r5jab")]([SubResource("Resource_kw6gc"), SubResource("Resource_wuyba"), SubResource("Resource_adhk7")])
 walls = NodePath("../Walls")
+wall_tower = ExtResource("25_b0gs1")
+bridge = ExtResource("26_4k7ks")
+special = Array[PackedScene]([ExtResource("27_w80y4"), ExtResource("28_kw6gc"), ExtResource("29_wuyba")])

@@ -98,6 +98,11 @@ func _triangulate_cell(cell: HexCell) -> void:
 		
 		if cell.is_underwater:
 			_triangulate_water(cell, direction, center)
+		else:
+			#if not cell.has_river() and not cell.has_roads():
+				#_feature_manager.add_feature(cell, cell.position)
+			if cell.is_special:
+				_feature_manager.add_special_feature(cell, cell.position)
 
 func _triangulate_without_river(cell: HexCell, direction: int, center: Vector3, edge: PackedVector3Array) -> void:
 	_triangulate_fan(center, edge, cell.color)
@@ -430,6 +435,12 @@ func _triangulate_road_adjacent_to_river(cell: HexCell, direction: HexCell.HexDi
 				return
 			corner = HexMetrics.get_first_solid_corner(direction as HexCell.HexDirection)
 		road_center += corner * 0.5
+		if cell.incoming_river == cell.next_direction(direction):
+			if (
+				cell.has_road_through_edge(cell.next2_direction(direction))
+				or cell.has_road_through_edge(cell.opposite_direction(direction))
+			):
+				_feature_manager.add_bridge(road_center, center - corner * 0.5)
 		center += corner * 0.25
 	# 锐角弯河道
 	elif cell.incoming_river == cell.previous_direction(cell.outgoing_river):
@@ -455,8 +466,13 @@ func _triangulate_road_adjacent_to_river(cell: HexCell, direction: HexCell.HexDi
 		var middle_next_direction := cell.next_direction(middle_direction)
 		if not cell.has_road_through_edge(middle_direction) and not cell.has_road_through_edge(middle_previous_direction) and not cell.has_road_through_edge(middle_next_direction):
 			return
-		road_center += HexMetrics.get_solid_edge_middle(middle_direction) * 0.25
-		center += HexMetrics.get_solid_edge_middle(middle_direction) * 0.25
+		var offset: Vector3 = HexMetrics.get_solid_edge_middle(middle_direction)
+		road_center += offset * 0.25
+		if direction == middle_direction and cell.has_road_through_edge(
+					cell.opposite_direction(direction)
+		):
+			_feature_manager.add_bridge(road_center, center - offset * HexMetrics.INNER_TO_OUTER * 0.7)
+		center += offset * 0.25
 
 	var middle_left := road_center.lerp(edge[0], interpolators.x)
 	var middle_right := road_center.lerp(edge[4], interpolators.y)

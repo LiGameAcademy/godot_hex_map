@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://dh1tr75j5iygr"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_eksq2"]
+size = Vector3(3, 1, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eksq2"]
+albedo_color = Color(1, 0, 0, 1)
+
+[node name="Bridge" type="Node3D" unique_id=1105124766]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=195963246]
+mesh = SubResource("BoxMesh_eksq2")
+surface_material_override/0 = SubResource("StandardMaterial3D_eksq2")

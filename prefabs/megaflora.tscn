@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://0swtgveeb6sx"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_b8512"]
+size = Vector3(3, 10, 3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b8512"]
+albedo_color = Color(0.011764706, 0.34509805, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_68xcf"]
+size = Vector3(2.5, 6, 2.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sgw55"]
+size = Vector3(2, 8, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_utwup"]
+size = Vector3(4, 4, 4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_j2gkj"]
+size = Vector3(2, 4, 2)
+
+[node name="Megaflora" type="Node3D" unique_id=1291006427]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=322817877]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8, 5, -2)
+mesh = SubResource("BoxMesh_b8512")
+surface_material_override/0 = SubResource("StandardMaterial3D_b8512")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=785902844]
+transform = Transform3D(0.8801047, 0, 0.47477958, 0, 1, 0, -0.47477958, 0, 0.8801047, -1.7689598, 3, 2.333262)
+mesh = SubResource("BoxMesh_68xcf")
+surface_material_override/0 = SubResource("StandardMaterial3D_b8512")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="." unique_id=1262967664]
+transform = Transform3D(0.6877213, 0, -0.7259748, 0, 1, 0, 0.7259748, 0, 0.6877213, 0.65, 4, -5)
+mesh = SubResource("BoxMesh_sgw55")
+surface_material_override/0 = SubResource("StandardMaterial3D_b8512")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="." unique_id=1345849232]
+transform = Transform3D(0.66900086, 0, -0.74326164, 0, 1, 0, 0.74326164, 0, 0.66900086, 3.385252, 2, 2.354209)
+mesh = SubResource("BoxMesh_utwup")
+surface_material_override/0 = SubResource("StandardMaterial3D_b8512")
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="." unique_id=1331681670]
+transform = Transform3D(0.8697879, 0, -0.49342582, 0, 1, 0, 0.49342582, 0, 0.8697879, 1.7012167, 2, -1.3403531)
+mesh = SubResource("BoxMesh_j2gkj")
+surface_material_override/0 = SubResource("StandardMaterial3D_b8512")

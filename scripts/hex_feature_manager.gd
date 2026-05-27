@@ -7,6 +7,12 @@ class_name HexFeatureManager
 
 @export var walls: HexMesh
 
+@export var wall_tower: PackedScene
+@export var bridge: PackedScene
+@export var special: Array[PackedScene] = []
+
+var bridge_yaw_offset_degrees: float = 0.0
+
 var _container: Node3D
 
 func clear() -> void:
@@ -24,6 +30,8 @@ func apply() -> void:
 		walls.commit_triangles()
 
 func add_feature(cell : HexCell, pos: Vector3) -> void:
+	if cell.is_special:
+		return
 	if not is_instance_valid(_container):
 		push_error("Container is not set")
 		return
@@ -80,7 +88,7 @@ func add_corner_wall(cell1: HexCell, cell2: HexCell, cell3: HexCell, v1: Vector3
 	elif cell3.walled:
 		add_corner_wall_segment(v3, cell3, v2, cell2, v1, cell1)
 
-func add_wall_segment(near_left: Vector3, far_left: Vector3, near_right: Vector3,far_right: Vector3) -> void:
+func add_wall_segment(near_left: Vector3, far_left: Vector3, near_right: Vector3,far_right: Vector3, add_tower: bool = false) -> void:
 	near_left = HexMetrics.perturb(near_left)
 	far_left = HexMetrics.perturb(far_left)
 	near_right = HexMetrics.perturb(near_right)
@@ -111,6 +119,17 @@ func add_wall_segment(near_left: Vector3, far_left: Vector3, near_right: Vector3
 
 	walls.add_quad([t1, t2, v3, v4], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
 
+	if add_tower and is_instance_valid(wall_tower):
+		var tower_instance: Node3D = wall_tower.instantiate()
+		var left_anchor := left
+		var right_anchor := right
+		var tower_pos := (left_anchor + right_anchor) * 0.5
+		var right_direction := right_anchor - left_anchor
+		_container.add_child(tower_instance)
+		right_direction = right_direction.normalized()
+		#tower_instance.position = tower_pos
+		tower_instance.look_at_from_position(tower_pos, tower_pos + right_direction, Vector3.UP)
+
 func add_corner_wall_segment(
 	pivot: Vector3, pivot_cell: HexCell,
 	left: Vector3, left_cell: HexCell,
@@ -122,7 +141,11 @@ func add_corner_wall_segment(
 	var has_right_wall := not right_cell.is_underwater and pivot_cell.get_edge_type_by_cell(right_cell) != HexMetrics.HexEdgeType.CLIFF
 	if has_left_wall:
 		if has_right_wall:
-			add_wall_segment(left, pivot, right, pivot)
+			var has_tower := false
+			if left_cell.elevation == right_cell.elevation:
+				var hex_hash : HexHash = HexMetrics.sample_hash_grid((pivot + left + right) / 3.0)
+				has_tower = hex_hash.e < HexMetrics.WALL_TOWER_THRESHOLD
+			add_wall_segment(left, pivot, right, pivot, has_tower)
 		elif left_cell.elevation < right_cell.elevation:
 			add_wall_wedge(pivot, left, right)
 		else:
@@ -163,6 +186,39 @@ func add_wall_wedge(near: Vector3, far: Vector3, point: Vector3) -> void:
 	walls.add_quad([v3, point_top, v1, point], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
 	walls.add_quad([v2, point, v4, point_top], [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE], false)
 	walls.add_triangle([v3, point_top, v4], [Color.WHITE, Color.WHITE, Color.WHITE], false)
+
+func add_bridge(road_center1: Vector3, road_center2: Vector3) -> void:
+	if not is_instance_valid(bridge):
+		return
+
+	road_center1 = HexMetrics.perturb(road_center1)
+	road_center2 = HexMetrics.perturb(road_center2)
+	var instance: Node3D = bridge.instantiate()
+	var midpoint := (road_center1 + road_center2) * 0.5
+
+	_container.add_child(instance)
+	var g_mid := _container.to_global(midpoint)
+	var g_end := _container.to_global(road_center2)
+	instance.look_at_from_position(g_mid, g_end, Vector3.UP)
+
+	if bridge_yaw_offset_degrees != 0.0:
+		instance.rotate_y(deg_to_rad(bridge_yaw_offset_degrees))
+
+	var length := road_center2.distance_to(road_center1)
+	instance.scale = Vector3(1.0, 1.0, length / HexMetrics.BRIDGE_DESIGN_LENGTH)
+
+func add_special_feature(cell: HexCell, pos: Vector3) -> void:
+	if cell.special_index <= 0 or cell.special_index > special.size():
+		return
+	var prefab: PackedScene = special[cell.special_index - 1]
+	if not is_instance_valid(prefab):
+		return
+	var instance: Node3D = prefab.instantiate()
+	instance.position = HexMetrics.perturb(pos)
+	_container.add_child(instance)
+	var hex_hash := HexMetrics.sample_hash_grid(pos)
+	if hex_hash != null:
+		instance.rotation_degrees.y = 360.0 * hex_hash.e
 
 func _pick_prefab(collections: Array[HexFeatureCollection], level: int, hex_hash: float, choice: float) -> PackedScene:
 	if level <= 0 or collections.is_empty():

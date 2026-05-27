@@ -94,6 +94,20 @@ var walled: bool = false:
 		walled = value
 		refresh()
 
+var special_index: int = 0:
+	set(value):
+		if value > 0 and has_river():
+			return
+		if special_index == value:
+			return
+		special_index = value
+		if value > 0:
+			remove_roads()
+		refresh()
+var is_special: bool:
+	get:
+		return special_index > 0
+
 var chunk : HexGridChunk
 
 #region 邻居海拔
@@ -174,11 +188,13 @@ func set_outgoing_river(direction: HexDirection) -> void:
 	# 4. 设置新的 outgoing / 对应邻居的 incoming
 	has_outgoing_river = true
 	outgoing_river = direction
+	special_index = 0
 	_refresh()
 
 	neighbor.remove_incoming_river()
 	neighbor.has_incoming_river = true
 	neighbor.incoming_river = opposite_direction(direction)
+	neighbor.special_index = 0
 	neighbor.refresh()
 
 	_set_road(int(direction), false)
@@ -251,6 +267,8 @@ func add_road(direction: HexDirection) -> void:
 	if has_river_through_edge(direction):
 		return
 	if get_elevation_difference(direction) > 1:
+		return
+	if is_special:
 		return
 	_set_road(idx, true)
 

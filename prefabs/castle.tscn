@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://bgdpf1312bhe0"]
+
+[ext_resource type="PackedScene" uid="uid://ihpfsuf11e5d" path="res://prefabs/wall_tower.tscn" id="1_5kn2g"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_i4qfe"]
+size = Vector3(6, 3, 6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i4qfe"]
+albedo_color = Color(1, 0, 0, 1)
+
+[node name="Castle" type="Node3D" unique_id=1641269326]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=288420653]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+mesh = SubResource("BoxMesh_i4qfe")
+surface_material_override/0 = SubResource("StandardMaterial3D_i4qfe")
+
+[node name="WallTower" parent="." unique_id=1923058875 instance=ExtResource("1_5kn2g")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 3)
+
+[node name="WallTower2" parent="." unique_id=377678908 instance=ExtResource("1_5kn2g")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -3)
+
+[node name="WallTower3" parent="." unique_id=23108853 instance=ExtResource("1_5kn2g")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 3)
+
+[node name="WallTower4" parent="." unique_id=441005668 instance=ExtResource("1_5kn2g")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -3)

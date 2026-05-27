@@ -16,6 +16,8 @@ extends MarginContainer
 @onready var spin_box_plant_level: SpinBox = %SpinBoxPlantLevel
 @onready var check_box_plant_level: CheckBox = %CheckBoxPlantLevel
 @onready var option_button_walled: OptionButton = %OptionButtonWalled
+@onready var spin_box_special: SpinBox = %SpinBoxSpecial
+@onready var check_box_special: CheckBox = %CheckBoxSpecial
 
 ## 表现层：负责 UI 展示与交互输入，依赖 HexMapEditor 逻辑层的 API / signal
 @export var editor: HexMapEditor
@@ -52,6 +54,9 @@ func _ready() -> void:
 	check_box_farm_level.button_pressed = editor.apply_farm_level
 	spin_box_plant_level.value = editor.active_plant_level
 	check_box_plant_level.button_pressed = editor.apply_plant_level
+
+	spin_box_special.value = editor.active_special_index
+	check_box_special.button_pressed = editor.apply_special_index
 
 	option_button_walled.selected = editor.walled_mode
 
@@ -131,6 +136,15 @@ func _ready() -> void:
 	option_button_walled.item_selected.connect(
 		func(index : int) -> void:
 			editor.set_walled_mode(index)
+	)
+	spin_box_special.value_changed.connect(
+		func(value: float) -> void:
+			editor.set_active_special_index(int(value))
+	)
+	check_box_special.toggled.connect(
+		func(toggled_on: bool) -> void:
+			editor.set_apply_special_index(toggled_on)
+			spin_box_special.editable = toggled_on
 	)
 	refresh_button.pressed.connect(
 		func() -> void:
