@@ -14,14 +14,16 @@ enum WalledMode {
 }
 @export var hex_grid: HexGrid
 # 可以在编辑器中编辑颜色
-@export var colors : Dictionary[StringName, Color] = {
-	"红色": Color.RED,
-	"绿色": Color.GREEN,
-	"蓝色": Color.BLUE
-}
+#@export var colors : Dictionary[StringName, Color] = {
+	#"红色": Color.RED,
+	#"绿色": Color.GREEN,
+	#"蓝色": Color.BLUE
+#}
 
-@export var active_color: int = 0 # 默认画笔红色
-@export var disable_color : bool = false
+#@export var active_color: int = 0 # 默认画笔红色
+#@export var disable_color : bool = false
+@export var active_terrain_type_index: int = 0
+@export var apply_terrain_type_index : bool = true
 ## 当前海拔等级
 @export var active_elevation: int = 0  
 @export var disable_elevation : bool = false
@@ -46,8 +48,10 @@ var _previous_cell: HexCell = null
 var _is_drag: bool = false
 var _drag_direction: HexCell.HexDirection
 
-signal active_color_changed(color: Color)
-signal color_disable_changed()
+#signal active_color_changed(color: Color)
+#signal color_disable_changed()
+signal active_terrain_type_changed(index: int)
+signal apply_terrain_type_changed()
 signal active_elevation_changed(elevation: int)
 signal elevation_disable_changed()
 signal brush_radius_changed(radius: int)
@@ -89,17 +93,29 @@ func _unhandled_input(event: InputEvent) -> void:
 			#KEY_Q: active_elevation -= 1
 			#KEY_E: active_elevation += 1
 
-func set_active_color(color: int) -> void:
-	if active_color == color:
-		return
-	active_color = color
-	active_color_changed.emit(color)
+#func set_active_color(color: int) -> void:
+	#if active_color == color:
+		#return
+	#active_color = color
+	#active_color_changed.emit(color)
+#
+#func set_disable_color(disable: bool) -> void:
+	#if disable_color == disable:
+		#return
+	#disable_color = disable
+	#color_disable_changed.emit()
 
-func set_disable_color(disable: bool) -> void:
-	if disable_color == disable:
+func set_terrain_type_index(index: int) -> void:
+	if active_terrain_type_index == index:
 		return
-	disable_color = disable
-	color_disable_changed.emit()
+	active_terrain_type_index = index
+	active_terrain_type_changed.emit(index)
+
+func set_apply_terrain_type_index(enabled : bool) -> void:
+	if apply_terrain_type_index == enabled:
+		return
+	apply_terrain_type_index = enabled
+	apply_terrain_type_changed.emit()
 
 func set_active_elevation(elevation: int) -> void:
 	if active_elevation == elevation:
@@ -292,8 +308,10 @@ func _edit_cell(cell: HexCell, drag_center: HexCell = null) -> void:
 			if other_cell != null:
 				other_cell.add_road(_drag_direction)
 
-	if not disable_color:
-		cell.color = colors.values()[active_color]
+	#if not disable_color:
+		#cell.color = colors.values()[active_color]
+	if apply_terrain_type_index:
+		cell.terrain_type_index = active_terrain_type_index
 	if not disable_elevation:
 		cell.elevation = active_elevation
 	if not disable_water_level:

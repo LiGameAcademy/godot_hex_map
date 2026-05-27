@@ -8,6 +8,7 @@ class_name HexGrid
 @export var noise: FastNoiseLite
 
 @export var hash_seed: int = 0
+@export var color_config: HexColorConfig
 
 var cells: Array[HexCell] = []
 var chunks: Array[HexGridChunk] = []
@@ -20,7 +21,10 @@ var cell_count_z: int
 func _ready() -> void:
 	HexMetrics.noise = noise
 	HexMetrics.initialize_hash_grid(hash_seed)
-
+	if is_instance_valid(color_config) and color_config.colors.size() > 0:
+		HexMetrics.colors = color_config.colors.duplicate()
+	else:
+		push_error("color_config is not set")
 	cell_count_x = chunk_count_x * HexMetrics.CHUNK_SIZE_X
 	cell_count_z = chunk_count_z * HexMetrics.CHUNK_SIZE_Z
 
@@ -60,7 +64,9 @@ func _create_cell(x: int, z: int, index: int) -> void:
 	cell.coordinates = HexCoordinates.from_offset(x, z)
 	_add_cell_to_chunk(x, z, cell)
 
-	cell.color = Color.WHITE  # 默认白色，后续可改为可配置的 default_color
+	#cell.color = Color.WHITE  # 默认白色，后续可改为可配置的 default_color
+	cell.terrain_type_index = 0
+
 	var pos := Vector3.ZERO
 	pos.x = (cell.coordinates.x + cell.coordinates.z * 0.5) * (HexMetrics.INNER_RADIUS * 2.0)
 	pos.z = cell.coordinates.z * (HexMetrics.OUTER_RADIUS * 1.5)

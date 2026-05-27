@@ -2,8 +2,13 @@
 
 [ext_resource type="Script" uid="uid://be8m8v571wab5" path="res://prefabs/hex_grid.gd" id="1_mmo8j"]
 [ext_resource type="FastNoiseLite" uid="uid://c438wsitnm4cr" path="res://resources/textures/hex_noise.tres" id="2_rk35d"]
+[ext_resource type="Script" uid="uid://bigfmqqqa1gqj" path="res://scripts/hex_color_config.gd" id="3_rk35d"]
+
+[sub_resource type="Resource" id="Resource_hfxtd"]
+script = ExtResource("3_rk35d")
+metadata/_custom_type_script = "uid://bigfmqqqa1gqj"
 
 [node name="HexGrid" type="Node3D" unique_id=258472898]
 script = ExtResource("1_mmo8j")
 noise = ExtResource("2_rk35d")
-hash_seed = null
+color_config = SubResource("Resource_hfxtd")

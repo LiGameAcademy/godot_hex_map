@@ -56,21 +56,16 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 5
-text = "颜色选择"
+text = "地形选择"
 
-[node name="OptionButtonColor" type="OptionButton" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer" unique_id=712971756]
+[node name="SpinBoxTerrainType" type="SpinBox" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer" unique_id=1743854604]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-item_count = 4
-popup/item_0/text = "忽略"
-popup/item_0/id = 0
-popup/item_1/text = "红色"
-popup/item_1/id = 1
-popup/item_2/text = "绿色"
-popup/item_2/id = 2
-popup/item_3/text = "蓝色"
-popup/item_3/id = 3
+
+[node name="CheckBoxTerrainType" type="CheckBox" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer" unique_id=1778780945]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
 
 [node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/VBoxContainer" unique_id=903911345]
 layout_mode = 2

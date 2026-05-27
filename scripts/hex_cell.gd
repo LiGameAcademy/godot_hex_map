@@ -14,8 +14,18 @@ var neighbors: Array[HexCell] = [null, null, null, null, null, null]
 
 ## 颜色，用于整张 Mesh 的顶点色
 var color: Color = Color.WHITE:
+	get:
+		if terrain_type_index >= 0 and terrain_type_index < HexMetrics.colors.size():
+			return HexMetrics.colors[terrain_type_index]
+		return Color.WHITE
+	set(_value):
+		assert(false, "color is read only")
+
+var terrain_type_index: int = 0:
 	set(value):
-		color = value
+		if terrain_type_index == value:
+			return
+		terrain_type_index = value
 		_refresh()
 ## 海拔高度
 var elevation : int = 0:

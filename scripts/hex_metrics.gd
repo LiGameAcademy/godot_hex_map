@@ -68,6 +68,7 @@ const WALL_TOWER_THRESHOLD: float = 0.5
 const BRIDGE_DESIGN_LENGTH: float = 7.0
 
 static var noise: FastNoiseLite
+static var colors: Array[Color] = []
 
 static var _hash_grid: Array[HexHash] = []
 

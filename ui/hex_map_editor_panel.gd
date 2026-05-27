@@ -1,6 +1,8 @@
 extends MarginContainer
 
-@onready var option_button_color: OptionButton = %OptionButtonColor
+#@onready var option_button_color: OptionButton = %OptionButtonColor
+@onready var spin_box_terrain_type: SpinBox = %SpinBoxTerrainType
+@onready var check_box_terrain_type: CheckBox = %CheckBoxTerrainType
 @onready var spin_box_elevation: SpinBox = %SpinBoxElevation
 @onready var check_box_elevation: CheckBox = %CheckBoxElevation
 @onready var spin_box_brush_size: SpinBox = %SpinBoxBrushSize
@@ -29,14 +31,16 @@ func _ready() -> void:
 		return
 
 	# 1）初始化 UI 为逻辑层当前状态
-	option_button_color.clear()
-	option_button_color.add_item("忽略")
-	for color_name in editor.colors:
-		option_button_color.add_item(color_name)
-	if editor.disable_color:
-		option_button_color.selected = 0
-	else:
-		option_button_color.selected = editor.active_color + 1
+	#option_button_color.clear()
+	#option_button_color.add_item("忽略")
+	#for color_name in editor.colors:
+		#option_button_color.add_item(color_name)
+	#if editor.disable_color:
+		#option_button_color.selected = 0
+	#else:
+		#option_button_color.selected = editor.active_color + 1
+	spin_box_terrain_type.value = editor.active_terrain_type_index
+	check_box_terrain_type.button_pressed = editor.apply_terrain_type_index
 	spin_box_elevation.value = editor.active_elevation
 	check_box_elevation.button_pressed = not editor.disable_elevation
 	spin_box_brush_size.value = editor.brush_radius
@@ -63,12 +67,21 @@ func _ready() -> void:
 	editor.river_mode_changed.connect(_on_editor_river_mode_changed)
 	editor.road_mode_changed.connect(_on_editor_road_mode_changed)
 	
-	option_button_color.item_selected.connect(
-		func(index : int) -> void:
-			if index == 0:
-				editor.set_disable_color(true)
-			else:
-				editor.set_active_color(index - 1)
+	#option_button_color.item_selected.connect(
+		#func(index : int) -> void:
+			#if index == 0:
+				#editor.set_disable_color(true)
+			#else:
+				#editor.set_active_color(index - 1)
+	#)
+	spin_box_terrain_type.value_changed.connect(
+		func(value: float) -> void:
+			editor.set_terrain_type_index(int(value))
+	)
+	check_box_terrain_type.toggled.connect(
+		func(toggled_on: bool) -> void:
+			editor.set_apply_terrain_type_index(toggled_on)
+			spin_box_terrain_type.editable = toggled_on
 	)
 	spin_box_elevation.value_changed.connect(
 		func(value: float) -> void:
