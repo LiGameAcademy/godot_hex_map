@@ -59,12 +59,26 @@ func refresh() -> void:
 		chunk.refresh()
 
 func save(file: FileAccess) -> void:
+	file.store_32(cell_count_x)
+	file.store_32(cell_count_z)
+
 	for cell in cells:
 		cell.save(file)
 
 func load(file: FileAccess, header: int) -> void:
+	var x := 20
+	var z := 15
+	if header >= 1:
+		x = file.get_32()
+		z = file.get_32()
+	if x != cell_count_x or z != cell_count_z:
+		if not create_map(x, z):
+			return
+	#create_map(20, 15)
+
 	for cell in cells:
 		cell.load(file)
+
 	refresh()
 
 func _create_chunks() -> void:
