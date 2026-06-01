@@ -46,8 +46,8 @@ const CELL_PERTURB_STRENGTH := 5.0
 const ELEVATION_PERTURB_STRENGTH := 1.5
 
 ## 大地图分块：每块的格子数（X、Z），网格尺寸需为块尺寸的整数倍
-const CHUNK_SIZE_X := 5
-const CHUNK_SIZE_Z := 5
+const CHUNK_SIZE_X : int = 5
+const CHUNK_SIZE_Z : int = 5
 
 ## 河床相对格子海拔的高度偏移（负值表示比地面低）
 const STREAM_BED_ELEVATION_OFFSET: float = -1.0

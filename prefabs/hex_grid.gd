@@ -3,8 +3,9 @@ extends Node3D
 class_name HexGrid
 
 @export var chunk_prefab: PackedScene = preload("res://prefabs/hex_grid_chunk.tscn")
-@export var chunk_count_x := 4
-@export var chunk_count_z := 3
+
+@export var cell_count_x: int = 20
+@export var cell_count_z: int = 15
 @export var noise: FastNoiseLite
 
 @export var hash_seed: int = 0
@@ -12,11 +13,8 @@ class_name HexGrid
 
 var cells: Array[HexCell] = []
 var chunks: Array[HexGridChunk] = []
-
-#var width := 6
-#var height := 6
-var cell_count_x: int
-var cell_count_z: int
+var chunk_count_x : int
+var chunk_count_z : int
 
 func _ready() -> void:
 	HexMetrics.noise = noise
@@ -25,11 +23,30 @@ func _ready() -> void:
 		HexMetrics.colors = color_config.colors.duplicate()
 	else:
 		push_error("color_config is not set")
-	cell_count_x = chunk_count_x * HexMetrics.CHUNK_SIZE_X
-	cell_count_z = chunk_count_z * HexMetrics.CHUNK_SIZE_Z
+	create_map(cell_count_x, cell_count_z)
+	#cell_count_x = chunk_count_x * HexMetrics.CHUNK_SIZE_X
+	#cell_count_z = chunk_count_z * HexMetrics.CHUNK_SIZE_Z
+
+	refresh()
+
+func create_map(x: int, z: int) -> bool:
+	if x <= 0 or x % HexMetrics.CHUNK_SIZE_X != 0 or z <= 0 or z % HexMetrics.CHUNK_SIZE_Z != 0:
+		push_error("Unsupported map size.")
+		return false
+
+	for chunk in chunks:
+		chunk.queue_free()
+	chunks.clear()
+	
+	cell_count_x = x
+	cell_count_z = z
+	chunk_count_x = int(float(cell_count_x) / HexMetrics.CHUNK_SIZE_X)
+	chunk_count_z = int(float(cell_count_z) / HexMetrics.CHUNK_SIZE_Z)
 
 	_create_chunks()
 	_create_cells()
+	
+	return true
 
 func get_cell(coords: HexCoordinates) -> HexCell:
 	return cells.filter(

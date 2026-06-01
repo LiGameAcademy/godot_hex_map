@@ -22,9 +22,11 @@ extends MarginContainer
 @onready var check_box_special: CheckBox = %CheckBoxSpecial
 @onready var button_load: Button = %ButtonLoad
 @onready var button_save: Button = %ButtonSave
+@onready var button_new_map: Button = %ButtonNewMap
 
 ## 表现层：负责 UI 展示与交互输入，依赖 HexMapEditor 逻辑层的 API / signal
 @export var editor: HexMapEditor
+@export var new_map_menu : Window
 
 var _syncing_mode_ui: bool = false
 
@@ -164,6 +166,11 @@ func _ready() -> void:
 	refresh_button.pressed.connect(func() -> void:editor.refresh())
 	button_save.pressed.connect(func() -> void:editor.save_map())
 	button_load.pressed.connect(func() -> void: editor.load_map()) 
+	button_new_map.pressed.connect(func() -> void:
+		if is_instance_valid(new_map_menu):
+			new_map_menu.editor = editor
+			new_map_menu.open()
+	)
 
 func _on_editor_river_mode_changed(_mode: HexMapEditor.RiverMode) -> void:
 	if not is_instance_valid(editor):

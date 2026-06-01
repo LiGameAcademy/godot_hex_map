@@ -257,6 +257,14 @@ func load_map() -> void:
 	else:
 		push_warning("Unknown map format: ", header)
 	file.close()
+	
+## 按格子尺寸新建地图：转发到 HexGrid.create_map，并在格子与 chunk 就绪后刷新网格
+func create_map_sized(cell_count_x: int, cell_count_z: int) -> void:
+	if not is_instance_valid(hex_grid):
+		push_error("HexMapEditor: hex_grid is null")
+		return
+	hex_grid.create_map(cell_count_x, cell_count_z)
+	hex_grid.refresh()
 
 func _handle_click_or_drag(mouse_pos: Vector2, from_motion: bool = false) -> void:
 	var camera := get_viewport().get_camera_3d()

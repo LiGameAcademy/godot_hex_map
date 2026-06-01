@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://n3lukix5lg53" path="res://prefabs/hex_map_camera.gd" id="1_4vdb4"]
 
-[node name="HexMapCamera" type="Node3D" unique_id=2101402743]
+[node name="HexMapCamera" type="Node3D" unique_id=2101402743 groups=["Camera"]]
 script = ExtResource("1_4vdb4")
 
 [node name="Swivel" type="Node3D" parent="." unique_id=2040822311]

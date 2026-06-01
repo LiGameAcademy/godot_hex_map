@@ -53,6 +53,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		_adjust_zoom(-event.relative.y * zoom_middle_drag_scale * zoom_sensitivity)
 		get_viewport().set_input_as_handled()
 
+func set_camera_locked(locked: bool) -> void:
+	set_process(not locked)
+	set_physics_process(not locked)
+
+func validate_position() -> void:
+	_adjust_position(0.0, 0.0, 0.0)
+
 func _adjust_position(x_delta: float, z_delta: float, dt: float) -> void:
 	var direction := (transform.basis * Vector3(x_delta, 0.0, z_delta)).normalized()
 	var damping : float = max(abs(x_delta), abs(z_delta))
@@ -63,10 +70,12 @@ func _adjust_position(x_delta: float, z_delta: float, dt: float) -> void:
 func _clamp_position(local_position: Vector3) -> Vector3:
 	if not is_instance_valid(grid):
 		return local_position
-	var x_max := (grid.chunk_count_x * HexMetrics.CHUNK_SIZE_X - 0.5) * (HexMetrics.INNER_RADIUS * 2.0)
-	var z_max := (grid.chunk_count_z * HexMetrics.CHUNK_SIZE_Z - 1.0) * (HexMetrics.OUTER_RADIUS * 1.5)
+	var x_max := (grid.cell_count_x - 0.5) * (HexMetrics.INNER_RADIUS * 2.0)
+	var z_max := (grid.cell_count_z - 1.0) * (HexMetrics.OUTER_RADIUS * 1.5)
+	
 	local_position.x = clamp(local_position.x, 0.0, x_max)
 	local_position.z = clamp(local_position.z, 0.0, z_max)
+
 	return local_position
 
 func _adjust_rotation(delta: float, dt: float) -> void:
