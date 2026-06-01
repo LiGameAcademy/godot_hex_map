@@ -2,6 +2,10 @@
 extends Node3D
 class_name HexGridChunk
 
+const COLOR1 := Color(1.0, 0.0, 0.0)  # 红
+const COLOR2 := Color(0.0, 1.0, 0.0)  # 绿
+const COLOR3 := Color(0.0, 0.0, 1.0)  # 蓝
+
 ## 本块内的格子（由 HexGrid 通过 add_cell 填入）
 var _cells: Array[HexCell] = []
 
@@ -105,7 +109,7 @@ func _triangulate_cell(cell: HexCell) -> void:
 				_feature_manager.add_special_feature(cell, cell.position)
 
 func _triangulate_without_river(cell: HexCell, direction: int, center: Vector3, edge: PackedVector3Array) -> void:
-	_triangulate_fan(center, edge, cell.color)
+	_triangulate_fan(center, edge, COLOR1)
 
 	if cell.has_roads():
 		var interpolators := _get_road_interpolators(direction as HexCell.HexDirection, cell)
@@ -149,7 +153,7 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 	if cell.get_edge_type(dir_index as HexCell.HexDirection) == HexMetrics.HexEdgeType.SLOPE:
 		_triangulate_edge_terraces(edge, edge2, cell, neighbor, has_road)
 	else:
-		_triangulate_strip(edge, edge2, cell.color, neighbor.color, has_road)
+		_triangulate_strip(edge, edge2, COLOR1, COLOR2, has_road)
 	
 	# 添加城墙
 	_feature_manager.add_wall(edge, cell, edge2, neighbor, cell.has_river_through_edge(dir_index), cell.has_road_through_edge(dir_index))
@@ -170,21 +174,21 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 		else:
 			_triangulate_corner(v5, edge[-1], v4, next_neighbor, cell, neighbor)
 
-func _triangulate_edge_terraces(edge: PackedVector3Array, edge2: PackedVector3Array, begin_cell: HexCell, end_cell: HexCell, has_road: bool) -> void:
-	var begin_color := begin_cell.color
-	var end_color := end_cell.color
+func _triangulate_edge_terraces(edge: PackedVector3Array, edge2: PackedVector3Array, _begin_cell: HexCell, _end_cell: HexCell, has_road: bool) -> void:
+	#var begin_color := begin_cell.color
+	#var end_color := end_cell.color
 
 	var e2 := _terrace_lerp_edge(edge, edge2, 1)
-	var c2 := HexMetrics.terrace_lerp_color(begin_color, end_color, 1)
+	var c2 := HexMetrics.terrace_lerp_color(COLOR1, COLOR2, 1)
 
-	_triangulate_strip(edge, e2, begin_cell.color, c2, has_road)
+	_triangulate_strip(edge, e2, COLOR1, c2, has_road)
 	for i in range(2, HexMetrics.TERRACE_STEPS):
 		var e1 := e2
 		var c1 = c2
 		e2 = _terrace_lerp_edge(edge, edge2, i)
-		c2 = HexMetrics.terrace_lerp_color(begin_color, end_color, i)
+		c2 = HexMetrics.terrace_lerp_color(COLOR1, COLOR2, i)
 		_triangulate_strip(e1, e2, c1, c2, has_road)
-	_triangulate_strip(e2, edge2, c2, end_color, has_road)
+	_triangulate_strip(e2, edge2, c2, COLOR2, has_road)
 
 func _triangulate_corner(
 		bottom_v: Vector3, left_v: Vector3, right_v: Vector3, 
@@ -211,7 +215,7 @@ func _triangulate_corner(
 			_triangulate_corner_terraces_cliff(left_v, right_v, bottom_v, left_cell, right_cell, bottom_cell)
 	else:
 		# 涵盖了我们尚未讨论过的所有剩余情况，包括 FFF、CCF、CCCR 和 CCCL。它们都用一个三角形表示
-		_terrain_mesh.add_triangle([bottom_v, left_v, right_v], [bottom_cell.color, left_cell.color, right_cell.color])
+		_terrain_mesh.add_triangle([bottom_v, left_v, right_v], [COLOR1, COLOR2, COLOR3])
 
 	_feature_manager.add_corner_wall(
 		bottom_cell, left_cell, right_cell,
@@ -220,49 +224,48 @@ func _triangulate_corner(
 
 func _triangulate_corner_terraces(
 		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
-		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
+		_begin_cell: HexCell, _left_cell: HexCell, _right_cell: HexCell) -> void:
 	var v3 = HexMetrics.terrace_lerp(begin_v, left_v, 1);
 	var v4 = HexMetrics.terrace_lerp(begin_v, right_v, 1)
-	var c3 = HexMetrics.terrace_lerp_color(begin_cell.color, left_cell.color, 1)
-	var c4 = HexMetrics.terrace_lerp_color(begin_cell.color, right_cell.color, 1)
+	var c3 = HexMetrics.terrace_lerp_color(COLOR1, COLOR2, 1)
+	var c4 = HexMetrics.terrace_lerp_color(COLOR1, COLOR3, 1)
 
-	_terrain_mesh.add_triangle([begin_v, v3, v4], [begin_cell.color, c3, c4])
+	_terrain_mesh.add_triangle([begin_v, v3, v4], [COLOR1, c3, c4])
 	for i in range(2, HexMetrics.TERRACE_STEPS):
 		var v1 = v3; var v2 = v4
 		var c1 = c3; var c2 = c4
 		v3 = HexMetrics.terrace_lerp(begin_v, left_v, i)
 		v4 = HexMetrics.terrace_lerp(begin_v, right_v, i)
-		c3 = HexMetrics.terrace_lerp_color(begin_cell.color, left_cell.color, i)
-		c4 = HexMetrics.terrace_lerp_color(begin_cell.color, right_cell.color, i)
+		c3 = HexMetrics.terrace_lerp_color(COLOR1, COLOR2, i)
+		c4 = HexMetrics.terrace_lerp_color(COLOR1, COLOR3, i)
 		_terrain_mesh.add_quad([v1, v2, v3, v4], [c1, c2, c3, c4])
-	_terrain_mesh.add_quad([v3, v4, left_v, right_v], [c3, c4, left_cell.color, right_cell.color])
+	_terrain_mesh.add_quad([v3, v4, left_v, right_v], [c3, c4, COLOR2, COLOR3])
 
 func _triangulate_corner_terraces_cliff(
 		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
 		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
 	var b : float = absf(1.0 / (right_cell.elevation - begin_cell.elevation))
 	var boundary : Vector3 = HexMetrics.perturb(begin_v).lerp(HexMetrics.perturb(right_v), b)
-	var boundary_color : Color = begin_cell.color.lerp(right_cell.color, b)
+	var boundary_color : Color = COLOR1.lerp(COLOR3, b)
 	
-	_triangulate_boundary_triangle(begin_v, left_v, boundary, begin_cell.color, left_cell.color, boundary_color)
+	_triangulate_boundary_triangle(begin_v, left_v, boundary, COLOR1, COLOR2, boundary_color)
 	if left_cell.get_edge_type_by_cell(right_cell) == HexMetrics.HexEdgeType.SLOPE:
-		_triangulate_boundary_triangle(left_v, right_v, boundary, left_cell.color, right_cell.color, boundary_color)
+		_triangulate_boundary_triangle(left_v, right_v, boundary, COLOR2, COLOR3, boundary_color)
 	else:
-		#_terrain_mesh.add_triangle([left_v, right_v, boundary], [left_cell.color, right_cell.color, boundary_color])
-		_terrain_mesh.add_triangle([HexMetrics.perturb(left_v), HexMetrics.perturb(right_v), boundary], [left_cell.color, right_cell.color, boundary_color], false)
+		_terrain_mesh.add_triangle([HexMetrics.perturb(left_v), HexMetrics.perturb(right_v), boundary], [COLOR2, COLOR3, boundary_color], false)
 
 func _triangulate_corner_cliff_terraces(
 		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
 		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
 	var b : float = abs(1.0 / (left_cell.elevation - begin_cell.elevation))
 	var boundary : Vector3 = HexMetrics.perturb(begin_v).lerp(HexMetrics.perturb(left_v), b)
-	var boundary_color : Color = begin_cell.color.lerp(left_cell.color, b)
+	var boundary_color : Color = COLOR1.lerp(COLOR2, b)
 	
-	_triangulate_boundary_triangle(right_v, begin_v, boundary, right_cell.color, begin_cell.color, boundary_color)
+	_triangulate_boundary_triangle(right_v, begin_v, boundary, COLOR3, COLOR1, boundary_color)
 	if left_cell.get_edge_type_by_cell(right_cell) == HexMetrics.HexEdgeType.SLOPE:
-		_triangulate_boundary_triangle(left_v, right_v, boundary, left_cell.color, right_cell.color, boundary_color)
+		_triangulate_boundary_triangle(left_v, right_v, boundary, COLOR2, COLOR3, boundary_color)
 	else:
-		_terrain_mesh.add_triangle([HexMetrics.perturb(left_v), HexMetrics.perturb(right_v), boundary], [left_cell.color, right_cell.color, boundary_color], false)
+		_terrain_mesh.add_triangle([HexMetrics.perturb(left_v), HexMetrics.perturb(right_v), boundary], [COLOR2, COLOR3, boundary_color], false)
 
 func _triangulate_boundary_triangle(
 		begin_v: Vector3, left_v: Vector3, boundary_v: Vector3, 
@@ -318,12 +321,12 @@ func _triangulate_with_river(cell: HexCell, direction: int, center: Vector3, edg
 	center.y = cell.stream_bed_y
 	ms[2].y = cell.stream_bed_y
 
-	_triangulate_strip(ms, edge, cell.color, cell.color)
+	_triangulate_strip(ms, edge, COLOR1, COLOR1)
 
-	_terrain_mesh.add_triangle([center_left, ms[0], ms[1]], [cell.color, cell.color, cell.color])
-	_terrain_mesh.add_triangle([center_right, ms[3], ms[4]], [cell.color, cell.color, cell.color])
-	_terrain_mesh.add_quad([center_left, center, ms[1], ms[2]], [cell.color, cell.color, cell.color, cell.color])
-	_terrain_mesh.add_quad([center, center_right, ms[2], ms[3]], [cell.color, cell.color, cell.color, cell.color])
+	_terrain_mesh.add_triangle([center_left, ms[0], ms[1]], [COLOR1, COLOR1, COLOR1])
+	_terrain_mesh.add_triangle([center_right, ms[3], ms[4]], [COLOR1, COLOR1, COLOR1])
+	_terrain_mesh.add_quad([center_left, center, ms[1], ms[2]], [COLOR1, COLOR1, COLOR1, COLOR1])
+	_terrain_mesh.add_quad([center, center_right, ms[2], ms[3]], [COLOR1, COLOR1, COLOR1, COLOR1])
 
 	if cell.is_underwater:
 		return
@@ -335,8 +338,8 @@ func _triangulate_with_river(cell: HexCell, direction: int, center: Vector3, edg
 func _triangulate_river_begin_or_end(cell: HexCell, _direction: int, center: Vector3, edge: PackedVector3Array) -> void:
 	var ms := _make_edge(center.lerp(edge[0], 0.5), center.lerp(edge[-1], 0.5))
 	ms[2].y = edge[2].y
-	_triangulate_strip(ms, edge, cell.color, cell.color)
-	_triangulate_fan(center, ms, cell.color)
+	_triangulate_strip(ms, edge, COLOR1, COLOR1)
+	_triangulate_fan(center, ms, COLOR1)
 
 	if cell.is_underwater:
 		return
@@ -367,8 +370,8 @@ func _triangulate_adjacent_to_river(cell: HexCell, direction: HexCell.HexDirecti
 	elif cell.has_river_through_edge(previous_direction) and cell.has_river_through_edge(cell.next2_direction(direction)):
 			center += HexMetrics.get_second_solid_corner(direction) * 0.25
 	var ms := _make_edge(center.lerp(edge[0], 0.5), center.lerp(edge[-1], 0.5))
-	_triangulate_strip(ms, edge, cell.color, cell.color)
-	_triangulate_fan(center, ms, cell.color)
+	_triangulate_strip(ms, edge, COLOR1, COLOR1)
+	_triangulate_fan(center, ms, COLOR1)
 
 	if not cell.is_underwater and not cell.has_road_through_edge(direction):
 		var feature_pos: Vector3 = (center + edge[0] + edge[-1]) / 3.0
