@@ -253,7 +253,7 @@ func load_map() -> void:
 	
 	var header := file.get_32()
 	if header == 0:
-		hex_grid.load(file)
+		hex_grid.load(file, 0)
 	else:
 		push_warning("Unknown map format: ", header)
 	file.close()
@@ -265,6 +265,70 @@ func create_map_sized(cell_count_x: int, cell_count_z: int) -> void:
 		return
 	hex_grid.create_map(cell_count_x, cell_count_z)
 	hex_grid.refresh()
+
+func save_map_to_stem(raw: String) -> bool:
+	var stem := _sanitize_map_stem(raw)
+	if stem.is_empty():
+		push_warning("HexMapEditor: invalid map name")
+		return false
+	var path := _map_path_for_stem(stem)
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		push_error("Failed to open file for writing: ", path)
+		return false
+	file.store_32(1)  # 版本 1：包含地图尺寸
+	hex_grid.save(file)
+	file.close()
+	return true
+
+func load_map_from_stem(raw: String) -> bool:
+	var stem := _sanitize_map_stem(raw)
+	if stem.is_empty():
+		push_warning("HexMapEditor: invalid map name")
+		return false
+	var path := _map_path_for_stem(stem)
+	if not FileAccess.file_exists(path):
+		push_warning("Map file not found: ", path)
+		return false
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		push_error("Failed to open file for reading: ", path)
+		return false
+	var header := file.get_32()
+	if header <= 1:
+		hex_grid.load(file, header)
+		var camera : HexMapCamera = get_tree().get_first_node_in_group("Camera")
+		if is_instance_valid(camera):
+			camera.validate_position()
+	else:
+		push_warning("Unknown map format: ", header)
+	file.close()
+	return header <= 1
+
+func delete_map_stem(raw: String) -> bool:
+	var stem := _sanitize_map_stem(raw)
+	if stem.is_empty():
+		push_warning("HexMapEditor: invalid map name")
+		return false
+	var path := _map_path_for_stem(stem)
+	if not FileAccess.file_exists(path):
+		push_warning("Map file not found: ", path)
+		return false
+	return DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK
+
+func _sanitize_map_stem(raw: String) -> String:
+	var s := raw.strip_edges()
+	if s.is_empty():
+		return ""
+	s = s.get_file()
+	if s.ends_with(".map"):
+		s = s.trim_suffix(".map")
+	if s.contains("..") or s.contains("/") or s.contains("\\") or s.contains(":"):
+		return ""
+	return s
+
+func _map_path_for_stem(stem: String) -> String:
+	return "user://%s.map" % stem
 
 func _handle_click_or_drag(mouse_pos: Vector2, from_motion: bool = false) -> void:
 	var camera := get_viewport().get_camera_3d()

@@ -27,6 +27,7 @@ extends MarginContainer
 ## 表现层：负责 UI 展示与交互输入，依赖 HexMapEditor 逻辑层的 API / signal
 @export var editor: HexMapEditor
 @export var new_map_menu : Window
+@export var save_load_menu : SaveLoadMenu
 
 var _syncing_mode_ui: bool = false
 
@@ -34,15 +35,6 @@ func _ready() -> void:
 	if editor == null:
 		return
 
-	# 1）初始化 UI 为逻辑层当前状态
-	#option_button_color.clear()
-	#option_button_color.add_item("忽略")
-	#for color_name in editor.colors:
-		#option_button_color.add_item(color_name)
-	#if editor.disable_color:
-		#option_button_color.selected = 0
-	#else:
-		#option_button_color.selected = editor.active_color + 1
 	spin_box_terrain_type.value = editor.active_terrain_type_index
 	check_box_terrain_type.button_pressed = editor.apply_terrain_type_index
 	spin_box_elevation.value = editor.active_elevation
@@ -164,8 +156,16 @@ func _ready() -> void:
 			spin_box_special.editable = toggled_on
 	)
 	refresh_button.pressed.connect(func() -> void:editor.refresh())
-	button_save.pressed.connect(func() -> void:editor.save_map())
-	button_load.pressed.connect(func() -> void: editor.load_map()) 
+	button_save.pressed.connect(func() -> void: 
+		if is_instance_valid(save_load_menu):
+			save_load_menu.editor = editor
+			save_load_menu.open(true)
+	)
+	button_load.pressed.connect(func() -> void:
+		if is_instance_valid(save_load_menu):
+			save_load_menu.editor = editor
+			save_load_menu.open(false)
+	) 
 	button_new_map.pressed.connect(func() -> void:
 		if is_instance_valid(new_map_menu):
 			new_map_menu.editor = editor

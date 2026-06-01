@@ -62,7 +62,7 @@ func save(file: FileAccess) -> void:
 	for cell in cells:
 		cell.save(file)
 
-func load(file: FileAccess) -> void:
+func load(file: FileAccess, header: int) -> void:
 	for cell in cells:
 		cell.load(file)
 	refresh()

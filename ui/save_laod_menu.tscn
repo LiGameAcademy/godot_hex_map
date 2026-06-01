@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://cf1vx5wp6guiu"]
+
+[ext_resource type="Script" uid="uid://dhwhodxep16pi" path="res://ui/save_laod_menu.gd" id="1_n4lb1"]
+
+[node name="SaveLaodMenu" type="Window" unique_id=10652236]
+oversampling_override = 1.0
+position = Vector2i(0, 36)
+size = Vector2i(512, 316)
+exclusive = true
+unresizable = true
+script = ExtResource("1_n4lb1")
+
+[node name="Control" type="Control" parent="." unique_id=1527211424]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control" unique_id=1197838010]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -35.5
+offset_top = -37.0
+offset_right = 35.5
+offset_bottom = 37.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LabelTitle" type="Label" parent="Control/VBoxContainer" unique_id=1937828710]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 22
+text = "保存/加载"
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="Control/VBoxContainer" unique_id=1079071435]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "存档名"
+
+[node name="ItemList" type="ItemList" parent="Control/VBoxContainer" unique_id=102821650]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/VBoxContainer" unique_id=2143582517]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/VBoxContainer/MarginContainer" unique_id=593012626]
+layout_mode = 2
+
+[node name="ButtonDelete" type="Button" parent="Control/VBoxContainer/MarginContainer/HBoxContainer" unique_id=191204662]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "删除"
+
+[node name="ButtonAction" type="Button" parent="Control/VBoxContainer/MarginContainer/HBoxContainer" unique_id=2003898295]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "保存"

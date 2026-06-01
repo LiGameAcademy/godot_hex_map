@@ -1,0 +1,92 @@
+[gd_scene format=3 uid="uid://dmh8pyrukrli3"]
+
+[ext_resource type="Script" uid="uid://b6xnqmhlsd034" path="res://ui/new_map_menu.gd" id="1_2dfxo"]
+
+[node name="NewMapMenu" type="Window" unique_id=1131493557]
+oversampling_override = 1.0
+title = "新地图"
+position = Vector2i(0, 36)
+size = Vector2i(512, 316)
+exclusive = true
+unresizable = true
+min_size = Vector2i(512, 316)
+script = ExtResource("1_2dfxo")
+
+[node name="Control" type="Control" parent="." unique_id=163255720]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control" unique_id=992480659]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/VBoxContainer" unique_id=1098776336]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Control/VBoxContainer/MarginContainer" unique_id=904903987]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 30
+text = "新地图"
+horizontal_alignment = 1
+
+[node name="MarginContainer2" type="MarginContainer" parent="Control/VBoxContainer" unique_id=494129342]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Control/VBoxContainer/MarginContainer2" unique_id=1965148448]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 12
+text = "选择地图尺寸（格子数量需要为chunk边长的整数倍）"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/VBoxContainer" unique_id=2026030709]
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 6
+
+[node name="MarginContainer2" type="MarginContainer" parent="Control/VBoxContainer/VBoxContainer" unique_id=1612379706]
+layout_mode = 2
+
+[node name="ButtonSmall" type="Button" parent="Control/VBoxContainer/VBoxContainer/MarginContainer2" unique_id=495754274]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "小（20*15）"
+
+[node name="MarginContainer3" type="MarginContainer" parent="Control/VBoxContainer/VBoxContainer" unique_id=111642794]
+layout_mode = 2
+
+[node name="ButtonMedium" type="Button" parent="Control/VBoxContainer/VBoxContainer/MarginContainer3" unique_id=842126823]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "中（40*30）"
+
+[node name="MarginContainer4" type="MarginContainer" parent="Control/VBoxContainer/VBoxContainer" unique_id=882841093]
+layout_mode = 2
+
+[node name="ButtonLarge" type="Button" parent="Control/VBoxContainer/VBoxContainer/MarginContainer4" unique_id=236168967]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+text = "大（80*60）"
