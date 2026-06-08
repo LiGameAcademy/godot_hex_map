@@ -11,15 +11,13 @@ var position : Vector3
 var label : Label3D
 
 var neighbors: Array[HexCell] = [null, null, null, null, null, null]
-
-## 颜色，用于整张 Mesh 的顶点色
-var color: Color = Color.WHITE:
-	get:
-		if terrain_type_index >= 0 and terrain_type_index < HexMetrics.colors.size():
-			return HexMetrics.colors[terrain_type_index]
-		return Color.WHITE
-	set(_value):
-		assert(false, "color is read only")
+#var color: Color = Color.WHITE:
+	#get:
+		#if terrain_type_index >= 0 and terrain_type_index < HexMetrics.colors.size():
+			#return HexMetrics.colors[terrain_type_index]
+		#return Color.WHITE
+	#set(_value):
+		#assert(false, "color is read only")
 
 var terrain_type_index: int = 0:
 	set(value):

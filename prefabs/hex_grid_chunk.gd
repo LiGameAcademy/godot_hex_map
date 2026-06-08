@@ -109,7 +109,7 @@ func _triangulate_cell(cell: HexCell) -> void:
 				_feature_manager.add_special_feature(cell, cell.position)
 
 func _triangulate_without_river(cell: HexCell, direction: int, center: Vector3, edge: PackedVector3Array) -> void:
-	_triangulate_fan(center, edge, COLOR1)
+	_triangulate_fan(center, edge, COLOR1, cell.terrain_type_index)
 
 	if cell.has_roads():
 		var interpolators := _get_road_interpolators(direction as HexCell.HexDirection, cell)
@@ -153,7 +153,7 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 	if cell.get_edge_type(dir_index as HexCell.HexDirection) == HexMetrics.HexEdgeType.SLOPE:
 		_triangulate_edge_terraces(edge, edge2, cell, neighbor, has_road)
 	else:
-		_triangulate_strip(edge, edge2, COLOR1, COLOR2, has_road)
+		_triangulate_strip(edge, edge2, COLOR1, COLOR2, has_road, cell.terrain_type_index, neighbor.terrain_type_index)
 	
 	# 添加城墙
 	_feature_manager.add_wall(edge, cell, edge2, neighbor, cell.has_river_through_edge(dir_index), cell.has_road_through_edge(dir_index))
@@ -174,21 +174,21 @@ func _triangulate_connection(cell: HexCell, dir_index: HexCell.HexDirection, edg
 		else:
 			_triangulate_corner(v5, edge[-1], v4, next_neighbor, cell, neighbor)
 
-func _triangulate_edge_terraces(edge: PackedVector3Array, edge2: PackedVector3Array, _begin_cell: HexCell, _end_cell: HexCell, has_road: bool) -> void:
-	#var begin_color := begin_cell.color
-	#var end_color := end_cell.color
+func _triangulate_edge_terraces(edge: PackedVector3Array, edge2: PackedVector3Array, begin_cell: HexCell, end_cell: HexCell, has_road: bool) -> void:
+	var t_begin := begin_cell.terrain_type_index
+	var t_end := end_cell.terrain_type_index
 
 	var e2 := _terrace_lerp_edge(edge, edge2, 1)
 	var c2 := HexMetrics.terrace_lerp_color(COLOR1, COLOR2, 1)
 
-	_triangulate_strip(edge, e2, COLOR1, c2, has_road)
+	_triangulate_strip(edge, e2, COLOR1, c2, has_road, t_begin, t_end)
 	for i in range(2, HexMetrics.TERRACE_STEPS):
 		var e1 := e2
 		var c1 = c2
 		e2 = _terrace_lerp_edge(edge, edge2, i)
 		c2 = HexMetrics.terrace_lerp_color(COLOR1, COLOR2, i)
-		_triangulate_strip(e1, e2, c1, c2, has_road)
-	_triangulate_strip(e2, edge2, c2, COLOR2, has_road)
+		_triangulate_strip(e1, e2, c1, c2, has_road, t_begin, t_end)
+	_triangulate_strip(e2, edge2, c2, COLOR2, has_road, t_begin, t_end)
 
 func _triangulate_corner(
 		bottom_v: Vector3, left_v: Vector3, right_v: Vector3, 
@@ -215,7 +215,8 @@ func _triangulate_corner(
 			_triangulate_corner_terraces_cliff(left_v, right_v, bottom_v, left_cell, right_cell, bottom_cell)
 	else:
 		# 涵盖了我们尚未讨论过的所有剩余情况，包括 FFF、CCF、CCCR 和 CCCL。它们都用一个三角形表示
-		_terrain_mesh.add_triangle([bottom_v, left_v, right_v], [COLOR1, COLOR2, COLOR3])
+		var types := Vector3(float(bottom_cell.terrain_type_index), float(left_cell.terrain_type_index), float(right_cell.terrain_type_index))
+		_terrain_mesh.add_triangle([bottom_v, left_v, right_v], [COLOR1, COLOR2, COLOR3], true, types)
 
 	_feature_manager.add_corner_wall(
 		bottom_cell, left_cell, right_cell,
@@ -224,13 +225,14 @@ func _triangulate_corner(
 
 func _triangulate_corner_terraces(
 		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
-		_begin_cell: HexCell, _left_cell: HexCell, _right_cell: HexCell) -> void:
+		begin_cell: HexCell, left_cell: HexCell, right_cell: HexCell) -> void:
 	var v3 = HexMetrics.terrace_lerp(begin_v, left_v, 1);
 	var v4 = HexMetrics.terrace_lerp(begin_v, right_v, 1)
 	var c3 = HexMetrics.terrace_lerp_color(COLOR1, COLOR2, 1)
 	var c4 = HexMetrics.terrace_lerp_color(COLOR1, COLOR3, 1)
 
-	_terrain_mesh.add_triangle([begin_v, v3, v4], [COLOR1, c3, c4])
+	var types := Vector3(float(begin_cell.terrain_type_index), float(left_cell.terrain_type_index), float(right_cell.terrain_type_index))
+	_terrain_mesh.add_triangle([begin_v, v3, v4], [COLOR1, c3, c4], true, types)
 	for i in range(2, HexMetrics.TERRACE_STEPS):
 		var v1 = v3; var v2 = v4
 		var c1 = c3; var c2 = c4
@@ -238,8 +240,8 @@ func _triangulate_corner_terraces(
 		v4 = HexMetrics.terrace_lerp(begin_v, right_v, i)
 		c3 = HexMetrics.terrace_lerp_color(COLOR1, COLOR2, i)
 		c4 = HexMetrics.terrace_lerp_color(COLOR1, COLOR3, i)
-		_terrain_mesh.add_quad([v1, v2, v3, v4], [c1, c2, c3, c4])
-	_terrain_mesh.add_quad([v3, v4, left_v, right_v], [c3, c4, COLOR2, COLOR3])
+		_terrain_mesh.add_quad([v1, v2, v3, v4], [c1, c2, c3, c4], true, types)
+	_terrain_mesh.add_quad([v3, v4, left_v, right_v], [c3, c4, COLOR2, COLOR3], true, types)
 
 func _triangulate_corner_terraces_cliff(
 		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
@@ -247,12 +249,15 @@ func _triangulate_corner_terraces_cliff(
 	var b : float = absf(1.0 / (right_cell.elevation - begin_cell.elevation))
 	var boundary : Vector3 = HexMetrics.perturb(begin_v).lerp(HexMetrics.perturb(right_v), b)
 	var boundary_color : Color = COLOR1.lerp(COLOR3, b)
-	
-	_triangulate_boundary_triangle(begin_v, left_v, boundary, COLOR1, COLOR2, boundary_color)
+
+	var types := Vector3(float(begin_cell.terrain_type_index), float(left_cell.terrain_type_index), float(right_cell.terrain_type_index))
+	_triangulate_boundary_triangle(begin_v, left_v, boundary, COLOR1, COLOR2, boundary_color, types)
 	if left_cell.get_edge_type_by_cell(right_cell) == HexMetrics.HexEdgeType.SLOPE:
-		_triangulate_boundary_triangle(left_v, right_v, boundary, COLOR2, COLOR3, boundary_color)
+		_triangulate_boundary_triangle(left_v, right_v, boundary, COLOR2, COLOR3, boundary_color, types)
 	else:
-		_terrain_mesh.add_triangle([HexMetrics.perturb(left_v), HexMetrics.perturb(right_v), boundary], [COLOR2, COLOR3, boundary_color], false)
+		_terrain_mesh.add_triangle(
+			[HexMetrics.perturb(left_v), HexMetrics.perturb(right_v), boundary], [COLOR2, COLOR3, boundary_color], false, types
+		)
 
 func _triangulate_corner_cliff_terraces(
 		begin_v: Vector3, left_v: Vector3, right_v: Vector3, 
@@ -260,27 +265,32 @@ func _triangulate_corner_cliff_terraces(
 	var b : float = abs(1.0 / (left_cell.elevation - begin_cell.elevation))
 	var boundary : Vector3 = HexMetrics.perturb(begin_v).lerp(HexMetrics.perturb(left_v), b)
 	var boundary_color : Color = COLOR1.lerp(COLOR2, b)
-	
-	_triangulate_boundary_triangle(right_v, begin_v, boundary, COLOR3, COLOR1, boundary_color)
+
+	var types := Vector3(float(begin_cell.terrain_type_index), float(left_cell.terrain_type_index), float(right_cell.terrain_type_index))
+	_triangulate_boundary_triangle(right_v, begin_v, boundary, COLOR3, COLOR1, boundary_color, types)
 	if left_cell.get_edge_type_by_cell(right_cell) == HexMetrics.HexEdgeType.SLOPE:
-		_triangulate_boundary_triangle(left_v, right_v, boundary, COLOR2, COLOR3, boundary_color)
+		_triangulate_boundary_triangle(left_v, right_v, boundary, COLOR2, COLOR3, boundary_color, types)
 	else:
-		_terrain_mesh.add_triangle([HexMetrics.perturb(left_v), HexMetrics.perturb(right_v), boundary], [COLOR2, COLOR3, boundary_color], false)
+		_terrain_mesh.add_triangle(
+			[HexMetrics.perturb(left_v), HexMetrics.perturb(right_v), boundary], [COLOR2, COLOR3, boundary_color], false, types
+		)
 
 func _triangulate_boundary_triangle(
 		begin_v: Vector3, left_v: Vector3, boundary_v: Vector3, 
-		begin_color: Color, left_color: Color, boundary_color: Color) -> void:
+		begin_color: Color, left_color: Color, boundary_color: Color, terrain_idx: Vector3) -> void:
 	var v2 := HexMetrics.terrace_lerp(begin_v, left_v, 1)
 	var c2 := HexMetrics.terrace_lerp_color(begin_color, left_color, 1)
-	_terrain_mesh.add_triangle([HexMetrics.perturb(begin_v), HexMetrics.perturb(v2), boundary_v], [begin_color, c2, boundary_color], false)
+	_terrain_mesh.add_triangle([HexMetrics.perturb(begin_v), HexMetrics.perturb(v2), boundary_v], [begin_color, c2, boundary_color], false, terrain_idx)
 	
 	for i in range(2, HexMetrics.TERRACE_STEPS):
 		var v1 = v2; var c1 = c2
 		v2 = HexMetrics.terrace_lerp(begin_v, left_v, i)
 		c2 = HexMetrics.terrace_lerp_color(begin_color, left_color, i)
-		_terrain_mesh.add_triangle([HexMetrics.perturb(v1), HexMetrics.perturb(v2), boundary_v], [c1, c2, boundary_color], false)
+		_terrain_mesh.add_triangle([HexMetrics.perturb(v1), HexMetrics.perturb(v2), boundary_v], [c1, c2, boundary_color], false, terrain_idx)
 	
-	_terrain_mesh.add_triangle([HexMetrics.perturb(v2), HexMetrics.perturb(left_v), boundary_v], [c2, left_color, boundary_color], false)
+	_terrain_mesh.add_triangle(
+		[HexMetrics.perturb(v2), HexMetrics.perturb(left_v), boundary_v], [c2, left_color, boundary_color], false, terrain_idx
+	)
 
 #endregion
 
@@ -321,12 +331,13 @@ func _triangulate_with_river(cell: HexCell, direction: int, center: Vector3, edg
 	center.y = cell.stream_bed_y
 	ms[2].y = cell.stream_bed_y
 
-	_triangulate_strip(ms, edge, COLOR1, COLOR1)
+	_triangulate_strip(ms, edge, COLOR1, COLOR1, false, cell.terrain_type_index, cell.terrain_type_index)
 
-	_terrain_mesh.add_triangle([center_left, ms[0], ms[1]], [COLOR1, COLOR1, COLOR1])
-	_terrain_mesh.add_triangle([center_right, ms[3], ms[4]], [COLOR1, COLOR1, COLOR1])
-	_terrain_mesh.add_quad([center_left, center, ms[1], ms[2]], [COLOR1, COLOR1, COLOR1, COLOR1])
-	_terrain_mesh.add_quad([center, center_right, ms[2], ms[3]], [COLOR1, COLOR1, COLOR1, COLOR1])
+	var types := Vector3(float(cell.terrain_type_index), float(cell.terrain_type_index), float(cell.terrain_type_index))
+	_terrain_mesh.add_triangle([center_left, ms[0], ms[1]], [COLOR1, COLOR1, COLOR1], true, types)
+	_terrain_mesh.add_triangle([center_right, ms[3], ms[4]], [COLOR1, COLOR1, COLOR1], true, types)
+	_terrain_mesh.add_quad([center_left, center, ms[1], ms[2]], [COLOR1, COLOR1, COLOR1, COLOR1], true, types)
+	_terrain_mesh.add_quad([center, center_right, ms[2], ms[3]], [COLOR1, COLOR1, COLOR1, COLOR1], true, types)
 
 	if cell.is_underwater:
 		return
@@ -338,8 +349,8 @@ func _triangulate_with_river(cell: HexCell, direction: int, center: Vector3, edg
 func _triangulate_river_begin_or_end(cell: HexCell, _direction: int, center: Vector3, edge: PackedVector3Array) -> void:
 	var ms := _make_edge(center.lerp(edge[0], 0.5), center.lerp(edge[-1], 0.5))
 	ms[2].y = edge[2].y
-	_triangulate_strip(ms, edge, COLOR1, COLOR1)
-	_triangulate_fan(center, ms, COLOR1)
+	_triangulate_strip(ms, edge, COLOR1, COLOR1, false, cell.terrain_type_index, cell.terrain_type_index)
+	_triangulate_fan(center, ms, COLOR1, cell.terrain_type_index)
 
 	if cell.is_underwater:
 		return
@@ -370,8 +381,8 @@ func _triangulate_adjacent_to_river(cell: HexCell, direction: HexCell.HexDirecti
 	elif cell.has_river_through_edge(previous_direction) and cell.has_river_through_edge(cell.next2_direction(direction)):
 			center += HexMetrics.get_second_solid_corner(direction) * 0.25
 	var ms := _make_edge(center.lerp(edge[0], 0.5), center.lerp(edge[-1], 0.5))
-	_triangulate_strip(ms, edge, COLOR1, COLOR1)
-	_triangulate_fan(center, ms, COLOR1)
+	_triangulate_strip(ms, edge, COLOR1, COLOR1, false, cell.terrain_type_index, cell.terrain_type_index)
+	_triangulate_fan(center, ms, COLOR1, cell.terrain_type_index)
 
 	if not cell.is_underwater and not cell.has_road_through_edge(direction):
 		var feature_pos: Vector3 = (center + edge[0] + edge[-1]) / 3.0
@@ -625,15 +636,17 @@ func _triangulate_estuary(edge1: PackedVector3Array, edge2: PackedVector3Array, 
 			[Vector2(1.0, 0.0), Vector2(0.5, -0.3), Vector2(1.5, -0.2), Vector2(0.7, -0.35)]
 		)
 
-func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color) -> void:
+func _triangulate_fan(center: Vector3, edge: PackedVector3Array, color: Color, terrain_type_index : int) -> void:
+	var types := Vector3.ONE * float(terrain_type_index)
 	var colors := [color, color, color]
 	for i in range(edge.size() - 1):
-		_terrain_mesh.add_triangle([center, edge[i], edge[i + 1]], colors)
+		_terrain_mesh.add_triangle([center, edge[i], edge[i + 1]], colors, true, types)
 
-func _triangulate_strip(from: PackedVector3Array, to: PackedVector3Array, c1: Color, c2: Color, has_road: bool = false) -> void:
+func _triangulate_strip(from: PackedVector3Array, to: PackedVector3Array, c1: Color, c2: Color, has_road: bool = false, type1 : int = 0, type2 : int = 0) -> void:
 	var colors := [c1, c1, c2, c2]
+	var types := Vector3(float(type1), float(type2), float(type1))
 	for i in range(from.size() - 1):
-		_terrain_mesh.add_quad([from[i], from[i + 1], to[i], to[i + 1]], colors)
+		_terrain_mesh.add_quad([from[i], from[i + 1], to[i], to[i + 1]], colors, true, types)
 	if has_road:
 		_triangulate_road_quad([from[1], from[2], from[3], to[1], to[2], to[3]])
 

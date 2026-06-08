@@ -106,9 +106,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	#color_disable_changed.emit()
 
 func set_terrain_type_index(index: int) -> void:
-	if active_terrain_type_index == index:
+	if index < 0:
+		active_terrain_type_index = -1
 		return
-	active_terrain_type_index = index
+	var max_index := get_terrain_type_count() - 1
+	active_terrain_type_index = mini(index, max_index)
 	active_terrain_type_changed.emit(index)
 
 func set_apply_terrain_type_index(enabled : bool) -> void:
@@ -315,6 +317,11 @@ func delete_map_stem(raw: String) -> bool:
 		push_warning("Map file not found: ", path)
 		return false
 	return DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK
+
+func get_terrain_type_count() -> int:
+	if is_instance_valid(hex_grid):
+		return maxi(1, hex_grid.terrain_type_count)
+	return 1
 
 func _sanitize_map_stem(raw: String) -> String:
 	var s := raw.strip_edges()

@@ -8,6 +8,7 @@ class_name HexMesh
 
 @export var show_wireframe: bool = false
 @export var persistent_material: Material
+@export var _use_terrain_types: bool = false
 
 var _surface_tool: SurfaceTool = null
 var _wireframe_vertices: PackedVector3Array = []
@@ -19,6 +20,8 @@ func begin_triangles() -> void:
 	else:
 		_surface_tool.clear()
 	_surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	if _use_terrain_types: 
+		_surface_tool.set_custom_format(0, SurfaceTool.CUSTOM_RGB_FLOAT)
 
 func commit_triangles() -> void:
 	_surface_tool.generate_normals()
@@ -30,17 +33,19 @@ func commit_triangles() -> void:
 	else:
 		_clear_wireframe_mesh()
 
-func add_quad(vertices: PackedVector3Array, colors: PackedColorArray, perturb: bool = true) -> void:
-	add_triangle([vertices[0], vertices[2], vertices[3]], [colors[0], colors[2], colors[3]], perturb)
-	add_triangle([vertices[1], vertices[0], vertices[3]], [colors[1], colors[0], colors[3]], perturb)
+func add_quad(vertices: PackedVector3Array, colors: PackedColorArray, perturb: bool = true, terrain_idx : Vector3 = Vector3(-1, -1, -1)) -> void:
+	add_triangle([vertices[0], vertices[2], vertices[3]], [colors[0], colors[2], colors[3]], perturb, terrain_idx)
+	add_triangle([vertices[1], vertices[0], vertices[3]], [colors[1], colors[0], colors[3]], perturb, terrain_idx)
 
-func add_triangle(vertices: PackedVector3Array, colors: PackedColorArray, perturb: bool = true) -> void:
+func add_triangle(vertices: PackedVector3Array, colors: PackedColorArray, perturb: bool = true, terrain_idx : Vector3 = Vector3(-1, -1, -1)) -> void:
 	var vs : PackedVector3Array
 	if perturb:
 		for v in vertices:
 			vs.append(HexMetrics.perturb(v))
 	else:
 		vs = vertices
+	if _use_terrain_types:
+		_surface_tool.set_custom(0, Color(terrain_idx.x, terrain_idx.y, terrain_idx.z, 1.0))
 	for i in range(3):
 		_surface_tool.set_color(colors[i])
 		_surface_tool.add_vertex(vs[i])

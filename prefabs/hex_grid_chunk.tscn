@@ -86,36 +86,43 @@ script = ExtResource("1_p6i6p")
 unique_name_in_owner = true
 surface_material_override/0 = null
 persistent_material = ExtResource("3_kw6gc")
+_use_terrain_types = true
 
 [node name="RiverMesh" parent="." unique_id=1661439844 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
 cast_shadow = 0
 show_wireframe = false
 persistent_material = ExtResource("3_n4gxk")
+_use_terrain_types = null
 
 [node name="EstuariesMesh" parent="." unique_id=117565725 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
 cast_shadow = 0
 persistent_material = ExtResource("4_act00")
+_use_terrain_types = null
 
 [node name="RoadMesh" parent="." unique_id=1977745933 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
 persistent_material = ExtResource("4_qw6ox")
+_use_terrain_types = null
 
 [node name="WaterMesh" parent="." unique_id=614090092 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
 cast_shadow = 0
 show_wireframe = false
 persistent_material = ExtResource("5_t2flr")
+_use_terrain_types = null
 
 [node name="WaterShoreMesh" parent="." unique_id=391653712 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
 cast_shadow = 0
 persistent_material = ExtResource("6_d2m5i")
+_use_terrain_types = null
 
 [node name="Walls" parent="." unique_id=1995495850 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
 persistent_material = SubResource("StandardMaterial3D_rs67w")
+_use_terrain_types = null
 
 [node name="HexFeatureManager" type="Node3D" parent="." unique_id=949338551 node_paths=PackedStringArray("walls")]
 unique_name_in_owner = true
