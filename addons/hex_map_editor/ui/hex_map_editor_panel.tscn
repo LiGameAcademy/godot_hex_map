@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://deiqomb6hdwx8"]
 
-[ext_resource type="Script" uid="uid://c04mts4e7ae14" path="res://ui/hex_map_editor_panel.gd" id="1_jiyck"]
+[ext_resource type="Script" uid="uid://c04mts4e7ae14" path="res://addons/hex_map_editor/ui/hex_map_editor_panel.gd" id="1_jiyck"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jiyck"]
 bg_color = Color(0.3044623, 0.30446222, 0.30446216, 1)

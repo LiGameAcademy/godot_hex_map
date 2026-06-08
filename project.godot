@@ -14,6 +14,10 @@ config/name="godot_hex_map"
 run/main_scene="uid://xmk16gfwea4"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/hex_map_editor/plugin.cfg")
+
 [global_group]
 
 Camera=""

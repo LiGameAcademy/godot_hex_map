@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dmh8pyrukrli3"]
 
-[ext_resource type="Script" uid="uid://b6xnqmhlsd034" path="res://ui/new_map_menu.gd" id="1_2dfxo"]
+[ext_resource type="Script" uid="uid://b6xnqmhlsd034" path="res://addons/hex_map_editor/ui/new_map_menu.gd" id="1_2dfxo"]
 
 [node name="NewMapMenu" type="Window" unique_id=1131493557]
 oversampling_override = 1.0

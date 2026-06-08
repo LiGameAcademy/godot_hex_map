@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cf1vx5wp6guiu"]
 
-[ext_resource type="Script" uid="uid://dhwhodxep16pi" path="res://ui/save_laod_menu.gd" id="1_n4lb1"]
+[ext_resource type="Script" uid="uid://dhwhodxep16pi" path="res://addons/hex_map_editor/ui/save_laod_menu.gd" id="1_n4lb1"]
 
 [node name="SaveLaodMenu" type="Window" unique_id=10652236]
 oversampling_override = 1.0

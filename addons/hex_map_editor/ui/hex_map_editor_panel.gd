@@ -1,4 +1,5 @@
 extends MarginContainer
+class_name HexMapEditorPanel
 
 #@onready var option_button_color: OptionButton = %OptionButtonColor
 @onready var spin_box_terrain_type: SpinBox = %SpinBoxTerrainType
