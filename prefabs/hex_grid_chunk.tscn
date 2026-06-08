@@ -2,13 +2,14 @@
 
 [ext_resource type="Script" uid="uid://bypyoa4k0yygk" path="res://prefabs/hex_grid_chunk.gd" id="1_p6i6p"]
 [ext_resource type="PackedScene" uid="uid://do5bqbp47h8a3" path="res://prefabs/hex_mesh.tscn" id="2_p6i6p"]
+[ext_resource type="Material" uid="uid://crktrrxlxsaib" path="res://resources/materials/terrian_shader_material.tres" id="3_kw6gc"]
 [ext_resource type="Material" uid="uid://bljr1cwyku2tx" path="res://resources/materials/river_shader_material.tres" id="3_n4gxk"]
 [ext_resource type="Material" uid="uid://dvspx2lgf77r4" path="res://resources/materials/estuaries_shader_material.tres" id="4_act00"]
 [ext_resource type="Material" uid="uid://ptaxwsghis3u" path="res://resources/materials/road_shader_material.tres" id="4_qw6ox"]
 [ext_resource type="Material" uid="uid://wnxepfjaidk" path="res://resources/materials/water_shader_material.tres" id="5_t2flr"]
 [ext_resource type="Material" uid="uid://dvf7pq0g3vb0a" path="res://resources/materials/water_shore_shader_material.tres" id="6_d2m5i"]
 [ext_resource type="Script" uid="uid://cjk3w7sh4abf7" path="res://scripts/hex_feature_manager.gd" id="8_0n84i"]
-[ext_resource type="Script" path="res://scripts/hex_feature_collection.gd" id="9_r5jab"]
+[ext_resource type="Script" uid="uid://bxkwx7isg5sy0" path="res://scripts/hex_feature_collection.gd" id="9_r5jab"]
 [ext_resource type="PackedScene" uid="uid://dgy7lflqsrvrl" path="res://prefabs/feature_urban_1.tscn" id="9_yw55k"]
 [ext_resource type="PackedScene" uid="uid://c0j46b1vh3dri" path="res://prefabs/feature_urban_2.tscn" id="10_r5jab"]
 [ext_resource type="PackedScene" uid="uid://sqj7i0o1tg1y" path="res://prefabs/feature_urban_3.tscn" id="11_ghse4"]
@@ -83,6 +84,8 @@ script = ExtResource("1_p6i6p")
 
 [node name="TerrainMesh" parent="." unique_id=1783659955 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
+surface_material_override/0 = null
+persistent_material = ExtResource("3_kw6gc")
 
 [node name="RiverMesh" parent="." unique_id=1661439844 instance=ExtResource("2_p6i6p")]
 unique_name_in_owner = true
