@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dvspx2lgf77r4"]
+
+[ext_resource type="Shader" uid="uid://dfqf83tbvgs7b" path="res://addons/hex_map_editor/examples/resources/shaders/estuaries.gdshader" id="1_rrtmf"]
+[ext_resource type="Texture2D" uid="uid://keutoldn7dgo" path="res://addons/hex_map_editor/examples/resources/textures/tiling-perlin-noise.png" id="2_jtvd0"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_rrtmf")
+shader_parameter/_main_tex = ExtResource("2_jtvd0")
+shader_parameter/_color = Color(0.2, 0.4, 0.9, 0.6)
+shader_parameter/_metallic = 0.0
+shader_parameter/_glossiness = 0.5

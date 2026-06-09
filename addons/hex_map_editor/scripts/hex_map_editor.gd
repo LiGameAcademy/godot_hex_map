@@ -1,3 +1,4 @@
+@tool
 extends Node
 class_name HexMapEditor
 
@@ -93,17 +94,21 @@ func _unhandled_input(event: InputEvent) -> void:
 			#KEY_Q: active_elevation -= 1
 			#KEY_E: active_elevation += 1
 
-#func set_active_color(color: int) -> void:
-	#if active_color == color:
-		#return
-	#active_color = color
-	#active_color_changed.emit(color)
-#
-#func set_disable_color(disable: bool) -> void:
-	#if disable_color == disable:
-		#return
-	#disable_color = disable
-	#color_disable_changed.emit()
+func handle_editor_viewport_input(camera: Camera3D, event: InputEvent) -> bool:
+	if not is_instance_valid(hex_grid) or not is_instance_valid(camera):
+		return false
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_is_drag = false
+			_handle_click_or_drag(event.position, false, camera)
+		else:
+			_previous_cell = null
+			_is_drag = false
+		return true
+	if event is InputEventMouseMotion and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
+		_handle_click_or_drag(event.position, true, camera)
+		return true
+	return false
 
 func set_terrain_type_index(index: int) -> void:
 	if index < 0:
@@ -337,8 +342,10 @@ func _sanitize_map_stem(raw: String) -> String:
 func _map_path_for_stem(stem: String) -> String:
 	return "user://%s.map" % stem
 
-func _handle_click_or_drag(mouse_pos: Vector2, from_motion: bool = false) -> void:
-	var camera := get_viewport().get_camera_3d()
+func _handle_click_or_drag(mouse_pos: Vector2, from_motion: bool = false, camera_override: Camera3D = null) -> void:
+	var camera := camera_override
+	if not is_instance_valid(camera):
+		camera = get_viewport().get_camera_3d()
 	if not is_instance_valid(camera):
 		push_error("HexMapEditor: camera is null")
 		return

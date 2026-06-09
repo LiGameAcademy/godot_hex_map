@@ -26,8 +26,8 @@ func _enter_tree() -> void:
 	_dock.editor = _editor_logic
 	_dock.custom_minimum_size = Vector2(340, 0)
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, _dock)
-	#_set_spatial_panel_visible(false)
-	#add_tool_menu_item(TOOL_MENU_TOGGLE_PAINT_MODE, _on_toggle_paint_mode)
+	_set_spatial_panel_visible(false)
+	add_tool_menu_item(TOOL_MENU_TOGGLE_PAINT_MODE, _on_toggle_paint_mode)
 	set_input_event_forwarding_always_enabled()
 
 	set_process(true)
@@ -49,6 +49,15 @@ func _exit_tree() -> void:
 func _process(_delta: float) -> void:
 	_rebind_scene_hex_grid()
 	_sync_spatial_panel_visibility()
+
+func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
+	if not _paint_mode_enabled or not _panel_visible_in_spatial:
+		return AFTER_GUI_INPUT_PASS
+	if not is_instance_valid(_editor_logic) or not is_instance_valid(_editor_logic.hex_grid):
+		return AFTER_GUI_INPUT_PASS
+	if _editor_logic.handle_editor_viewport_input(viewport_camera, event):
+		return AFTER_GUI_INPUT_STOP
+	return AFTER_GUI_INPUT_PASS
 
 func _handles(object: Object) -> bool:
 	return object is HexGrid
@@ -101,3 +110,8 @@ func _find_hex_grid(root: Node) -> HexGrid:
 		if is_instance_valid(found):
 			return found
 	return null
+
+func _on_toggle_paint_mode() -> void:
+	_paint_mode_enabled = not _paint_mode_enabled
+	var tip := "Hex Map 笔刷模式：%s（开启后可在 3D 视口左键绘制）" % ("开启" if _paint_mode_enabled else "关闭")
+	print(tip)

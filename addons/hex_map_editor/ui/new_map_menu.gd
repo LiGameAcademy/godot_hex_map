@@ -1,4 +1,6 @@
+@tool
 extends Window
+class_name NewMapMenu
 
 @onready var button_small: Button = %ButtonSmall
 @onready var button_medium: Button = %ButtonMedium

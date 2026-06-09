@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://r8bbikpwg6vq"]
+
+[ext_resource type="Script" uid="uid://be8m8v571wab5" path="res://addons/hex_map_editor/prefabs/hex_grid.gd" id="1_mmo8j"]
+[ext_resource type="FastNoiseLite" uid="uid://c438wsitnm4cr" path="res://addons/hex_map_editor/examples/resources/textures/hex_noise.tres" id="2_rk35d"]
+
+[node name="HexGrid" type="Node3D" unique_id=258472898]
+script = ExtResource("1_mmo8j")
+noise = ExtResource("2_rk35d")

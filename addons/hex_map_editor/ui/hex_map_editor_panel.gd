@@ -1,5 +1,9 @@
+@tool
 extends MarginContainer
 class_name HexMapEditorPanel
+
+const NEW_MAP_MENU_SCENE := preload("res://addons/hex_map_editor/ui/new_map_menu.tscn")
+const SAVE_LOAD_MENU_SCENE := preload("res://addons/hex_map_editor/ui/save_load_menu.tscn")
 
 #@onready var option_button_color: OptionButton = %OptionButtonColor
 @onready var spin_box_terrain_type: SpinBox = %SpinBoxTerrainType
@@ -29,10 +33,13 @@ class_name HexMapEditorPanel
 @export var editor: HexMapEditor
 @export var new_map_menu : Window
 @export var save_load_menu : SaveLoadMenu
+var _owns_new_map_menu: bool = false
+var _owns_save_load_menu: bool = false
 
 var _syncing_mode_ui: bool = false
 
 func _ready() -> void:
+	_ensure_runtime_menus()
 	if editor == null:
 		return
 
@@ -172,6 +179,23 @@ func _ready() -> void:
 			new_map_menu.editor = editor
 			new_map_menu.open()
 	)
+
+func _exit_tree() -> void:
+	if _owns_new_map_menu and is_instance_valid(new_map_menu):
+		new_map_menu.queue_free()
+	if _owns_save_load_menu and is_instance_valid(save_load_menu):
+		save_load_menu.queue_free()
+
+func _ensure_runtime_menus() -> void:
+	var host: Node = get_tree().root
+	if not is_instance_valid(new_map_menu):
+		new_map_menu = NEW_MAP_MENU_SCENE.instantiate() as NewMapMenu
+		host.add_child(new_map_menu)
+		_owns_new_map_menu = true
+	if not is_instance_valid(save_load_menu):
+		save_load_menu = SAVE_LOAD_MENU_SCENE.instantiate() as SaveLoadMenu
+		host.add_child(save_load_menu)
+		_owns_save_load_menu = true
 
 func _on_editor_river_mode_changed(_mode: HexMapEditor.RiverMode) -> void:
 	if not is_instance_valid(editor):

@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://crktrrxlxsaib"]
+
+[ext_resource type="Shader" uid="uid://ce2cq6388x5m8" path="res://addons/hex_map_editor/examples/resources/shaders/terrain.gdshader" id="1_xgjph"]
+[ext_resource type="Texture2DArray" uid="uid://frb2llk54xaj" path="res://addons/hex_map_editor/examples/resources/terrain/terrain_texture_array.tres" id="2_2chle"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_xgjph")
+shader_parameter/terrain_textures = ExtResource("2_2chle")
+shader_parameter/texture_scale = 0.02
