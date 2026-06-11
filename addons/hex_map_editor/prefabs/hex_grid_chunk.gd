@@ -17,55 +17,11 @@ var _cells: Array[HexCell] = []
 @onready var _water_shore_mesh: HexMesh = %WaterShoreMesh
 @onready var _feature_manager: HexFeatureManager = %HexFeatureManager
 
+var _mesh_rebuild_queued: bool = false
+
 func _ready() -> void:
 	var size := HexMetrics.CHUNK_SIZE_X * HexMetrics.CHUNK_SIZE_Z
 	_cells.resize(size)
-	# 初始不三角化，等所有格子加入后再统一刷新
-	set_process(false)
-
-func _process(_delta: float) -> void:
-	#if is_instance_valid(_hex_mesh) and _cells.size() > 0:
-		#_hex_mesh.triangulate(_cells)
-	if _cells.is_empty():
-		return
-
-	if is_instance_valid(_terrain_mesh):
-		_terrain_mesh.begin_triangles()
-	if is_instance_valid(_river_mesh):
-		_river_mesh.begin_triangles()
-	if is_instance_valid(_estuaries_mesh):
-		_estuaries_mesh.begin_triangles()
-	if is_instance_valid(_road_mesh):
-		_road_mesh.begin_triangles()
-	if is_instance_valid(_water_mesh):
-		_water_mesh.begin_triangles()
-	if is_instance_valid(_water_shore_mesh):
-		_water_shore_mesh.begin_triangles()
-
-	if is_instance_valid(_feature_manager):
-		_feature_manager.clear()
-
-	for cell in _cells:
-		if is_instance_valid(cell):
-			_triangulate_cell(cell)
-
-	if is_instance_valid(_terrain_mesh):
-		_terrain_mesh.commit_triangles()
-	if is_instance_valid(_river_mesh):
-		_river_mesh.commit_triangles()
-	if is_instance_valid(_estuaries_mesh):
-		_estuaries_mesh.commit_triangles()
-	if is_instance_valid(_road_mesh):
-		_road_mesh.commit_triangles()
-	if is_instance_valid(_water_mesh):
-		_water_mesh.commit_triangles()
-	if is_instance_valid(_water_shore_mesh):
-		_water_shore_mesh.commit_triangles()
-
-	if is_instance_valid(_feature_manager):
-		_feature_manager.apply()
-
-	set_process(false)
 
 ## 将格子加入本块（HexGrid 在 create_cell 后调用）
 func add_cell(index: int, cell: HexCell) -> void:
@@ -74,7 +30,13 @@ func add_cell(index: int, cell: HexCell) -> void:
 
 ## 标记需要重算网格；实际三角化延迟到 _process，避免一帧内多次刷新同一块
 func refresh() -> void:
-	set_process(true)
+	if _mesh_rebuild_queued:
+		return
+	_mesh_rebuild_queued = true
+	if Engine.is_editor_hint():
+		_run_mesh_rebuild()
+	else:
+		call_deferred("_run_mesh_rebuild")
 
 ## 三角化单个六边形网格
 func _triangulate_cell(cell: HexCell) -> void:
@@ -666,3 +628,48 @@ func _terrace_lerp_edge(a: PackedVector3Array, b: PackedVector3Array, step: int)
 	for i in range(a.size()):
 		o[i] = HexMetrics.terrace_lerp(a[i], b[i], step)
 	return o
+
+
+func _run_mesh_rebuild() -> void:
+	_mesh_rebuild_queued = false
+
+	if _cells.is_empty():
+		return
+
+	if is_instance_valid(_terrain_mesh):
+		_terrain_mesh.begin_triangles()
+	if is_instance_valid(_river_mesh):
+		_river_mesh.begin_triangles()
+	if is_instance_valid(_estuaries_mesh):
+		_estuaries_mesh.begin_triangles()
+	if is_instance_valid(_road_mesh):
+		_road_mesh.begin_triangles()
+	if is_instance_valid(_water_mesh):
+		_water_mesh.begin_triangles()
+	if is_instance_valid(_water_shore_mesh):
+		_water_shore_mesh.begin_triangles()
+
+	if is_instance_valid(_feature_manager):
+		_feature_manager.clear()
+
+	for cell in _cells:
+		if is_instance_valid(cell):
+			_triangulate_cell(cell)
+
+	if is_instance_valid(_terrain_mesh):
+		_terrain_mesh.commit_triangles()
+	if is_instance_valid(_river_mesh):
+		_river_mesh.commit_triangles()
+	if is_instance_valid(_estuaries_mesh):
+		_estuaries_mesh.commit_triangles()
+	if is_instance_valid(_road_mesh):
+		_road_mesh.commit_triangles()
+	if is_instance_valid(_water_mesh):
+		_water_mesh.commit_triangles()
+	if is_instance_valid(_water_shore_mesh):
+		_water_shore_mesh.commit_triangles()
+
+	if is_instance_valid(_feature_manager):
+		_feature_manager.apply()
+
+	set_process(false)

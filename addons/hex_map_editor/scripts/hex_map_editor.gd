@@ -49,6 +49,10 @@ var _previous_cell: HexCell = null
 var _is_drag: bool = false
 var _drag_direction: HexCell.HexDirection
 
+var _undo_redo: EditorUndoRedoManager = null
+var _stroke_active: bool = false
+var _stroke_before_states: Array[Dictionary] = []
+
 #signal active_color_changed(color: Color)
 #signal color_disable_changed()
 signal active_terrain_type_changed(index: int)
@@ -94,6 +98,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			#KEY_Q: active_elevation -= 1
 			#KEY_E: active_elevation += 1
 
+func set_undo_redo(manager: EditorUndoRedoManager) -> void:
+	_undo_redo = manager
+
 func handle_editor_viewport_input(camera: Camera3D, event: InputEvent) -> bool:
 	if not is_instance_valid(hex_grid) or not is_instance_valid(camera):
 		return false
@@ -101,9 +108,11 @@ func handle_editor_viewport_input(camera: Camera3D, event: InputEvent) -> bool:
 		if event.pressed:
 			_is_drag = false
 			_handle_click_or_drag(event.position, false, camera)
+			_begin_undoable_stroke_if_needed()
 		else:
 			_previous_cell = null
 			_is_drag = false
+			_finish_undoable_stroke()
 		return true
 	if event is InputEventMouseMotion and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
 		_handle_click_or_drag(event.position, true, camera)
@@ -451,3 +460,125 @@ func _validate_drag(current_cell: HexCell) -> void:
 			_is_drag = true
 			_drag_direction = d
 			return
+
+func _begin_undoable_stroke_if_needed() -> void:
+	if not is_instance_valid(hex_grid) or _undo_redo == null or _stroke_active:
+		return
+	_stroke_before_states = _capture_map_states()
+	_stroke_active = true
+	
+func _finish_undoable_stroke() -> void:
+	if not _stroke_active:
+		return
+	_stroke_active = false
+	if not is_instance_valid(hex_grid) or _undo_redo == null:
+		_stroke_before_states.clear()
+		return
+	var after_states := _capture_map_states()
+	var diffs := _collect_state_diffs(_stroke_before_states, after_states)
+	_stroke_before_states.clear()
+	if diffs.is_empty():
+		return
+	_undo_redo.create_action("Hex Map Paint Stroke")
+	_undo_redo.add_do_method(self, "_apply_state_diffs", diffs, true)
+	_undo_redo.add_undo_method(self, "_apply_state_diffs", diffs, false)
+	_undo_redo.commit_action()
+
+func _capture_map_states() -> Array[Dictionary]:
+	var states: Array[Dictionary] = []
+	if not is_instance_valid(hex_grid):
+		return states
+	states.resize(hex_grid.cells.size())
+	for i in range(hex_grid.cells.size()):
+		var cell := hex_grid.cells[i]
+		if is_instance_valid(cell):
+			states[i] = _capture_cell_state(cell)
+		else:
+			states[i] = {}
+	return states
+
+func _collect_state_diffs(before_states: Array[Dictionary], after_states: Array[Dictionary]) -> Array[Dictionary]:
+	var diffs: Array[Dictionary] = []
+	var n := mini(before_states.size(), after_states.size())
+	for i in range(n):
+		var before := before_states[i]
+		var after := after_states[i]
+		if before.is_empty() and after.is_empty():
+			continue
+		if not _cell_states_equal(before, after):
+			diffs.append({
+				"index": i,
+				"before": before,
+				"after": after,
+			})
+	return diffs
+
+func _apply_state_diffs(diffs: Array[Dictionary], use_after: bool) -> void:
+	if not is_instance_valid(hex_grid):
+		return
+
+	for diff in diffs:
+		var index: int = diff.get("index", -1)
+		if index < 0 or index >= hex_grid.cells.size():
+			continue
+		var cell := hex_grid.cells[index]
+		if not is_instance_valid(cell):
+			continue
+		var state: Dictionary = diff.after if use_after else diff.before
+		_apply_cell_state(cell, state)
+	hex_grid.refresh()
+
+func _apply_cell_state(cell: HexCell, state: Dictionary) -> void:
+	if state.is_empty():
+		return
+	cell.terrain_type_index = state.get("terrain_type_index", 0)
+	cell.elevation = state.get("elevation", 0)
+	cell.water_level = state.get("water_level", 0)
+	cell.urban_level = state.get("urban_level", 0)
+	cell.farm_level = state.get("farm_level", 0)
+	cell.plant_level = state.get("plant_level", 0)
+	cell.special_index = state.get("special_index", 0)
+	cell.walled = state.get("walled", false)
+	cell.has_incoming_river = state.get("has_incoming_river", false)
+	cell.incoming_river = state.get("incoming_river", 0) as HexCell.HexDirection
+	cell.has_outgoing_river = state.get("has_outgoing_river", false)
+	cell.outgoing_river = state.get("outgoing_river", 0) as HexCell.HexDirection
+	var roads: Variant = state.get("roads", null)
+	if roads is PackedByteArray and roads.size() == 6:
+		cell.roads = roads.duplicate()
+	#cell._validate_river_constraints()
+
+func _capture_cell_state(cell: HexCell) -> Dictionary:
+	return {
+		"terrain_type_index": cell.terrain_type_index,
+		"elevation": cell.elevation,
+		"water_level": cell.water_level,
+		"urban_level": cell.urban_level,
+		"farm_level": cell.farm_level,
+		"plant_level": cell.plant_level,
+		"special_index": cell.special_index,
+		"walled": cell.walled,
+		"has_incoming_river": cell.has_incoming_river,
+		"incoming_river": int(cell.incoming_river),
+		"has_outgoing_river": cell.has_outgoing_river,
+		"outgoing_river": int(cell.outgoing_river),
+		"roads": cell.roads.duplicate(),
+	}
+
+func _cell_states_equal(a: Dictionary, b: Dictionary) -> bool:
+	if a.size() != b.size():
+		return false
+	for key in a:
+		if not b.has(key):
+			return false
+		var av: Variant = a[key]
+		var bv: Variant = b[key]
+		if av is PackedByteArray and bv is PackedByteArray:
+			if av.size() != bv.size():
+				return false
+			for i in range(av.size()):
+				if av[i] != bv[i]:
+					return false
+		elif av != bv:
+			return false
+	return true

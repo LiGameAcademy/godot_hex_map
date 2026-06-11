@@ -14,12 +14,11 @@ func _enter_tree() -> void:
 	_editor_logic = HexMapEditor.new()
 	_editor_logic.name = "HexMapEditorPluginRuntime"
 	var undo_redo: EditorUndoRedoManager = null
-	#var editor_interface := get_editor_interface()
 	if is_instance_valid(EditorInterface) and EditorInterface.has_method("get_editor_undo_redo"):
 		undo_redo = EditorInterface.get_editor_undo_redo()
 	elif has_method("get_undo_redo"):
 		undo_redo = get_undo_redo()
-	#_editor_logic.set_undo_redo(undo_redo)
+	_editor_logic.set_undo_redo(undo_redo)
 	add_child(_editor_logic)
 
 	_dock = PANEL_SCENE.instantiate() as HexMapEditorPanel

@@ -226,6 +226,7 @@ func _pick_prefab(collections: Array[HexFeatureCollection], level: int, hex_hash
 		return null
 	var thresholds := HexMetrics.get_feature_thresholds(level)
 	if thresholds.is_empty():
+		#push_error("thresholds is_empty!")
 		return null
 	if collections.size() != thresholds.size():
 		push_error(

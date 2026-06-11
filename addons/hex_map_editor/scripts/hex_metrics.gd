@@ -72,11 +72,11 @@ static var noise: FastNoiseLite
 
 static var _hash_grid: Array[HexHash] = []
 
-static var _feature_thresholds: Array[PackedFloat32Array] = [
-	PackedFloat32Array([0.0, 0.0, 0.4]),
-	PackedFloat32Array([0.0, 0.4, 0.6]),
-	PackedFloat32Array([0.4, 0.6, 0.8])
-]
+#static var _feature_thresholds: Array[PackedFloat32Array] = [
+	#PackedFloat32Array([0.0, 0.0, 0.4]),
+	#PackedFloat32Array([0.0, 0.4, 0.6]),
+	#PackedFloat32Array([0.4, 0.6, 0.8])
+#]
 
 ## 获取第一个混合角点的坐标
 static func get_first_corner(index: int) -> Vector3:
@@ -177,8 +177,9 @@ static func sample_hash_grid(pos: Vector3) -> HexHash:
 	return _hash_grid[x + z * HASH_GRID_SIZE]
 
 static func get_feature_thresholds(level: int) -> PackedFloat32Array:
-	if level > 0 and level <= _feature_thresholds.size():
-		return _feature_thresholds[level - 1]
+	if level == 1: return PackedFloat32Array([0.0, 0.0, 0.4])
+	if level == 2: return PackedFloat32Array([0.0, 0.4, 0.6])
+	if level == 3: return PackedFloat32Array([0.4, 0.6, 0.8])
 	return PackedFloat32Array()
 
 static func wall_thickness_offset(near: Vector3, far: Vector3) -> Vector3:
